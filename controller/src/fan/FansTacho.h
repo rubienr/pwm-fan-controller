@@ -1,0 +1,17 @@
+#pragma once
+#include <driver/pcnt.h>
+#include <inttypes.h>
+
+
+struct FansTacho
+{
+    bool begin();
+    bool processEverySecond();
+    int16_t getRpm(uint8_t index);
+
+protected:
+    bool setupCounterUnit(pcnt_unit_t unit, pcnt_channel_t unitChannel, uint8_t gpioNum);
+    bool takeFromCounterUnit(pcnt_unit_t unit, uint8_t index);
+
+    int16_t rpm_x2[7]{ 0 };
+};
