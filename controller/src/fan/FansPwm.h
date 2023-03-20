@@ -18,7 +18,7 @@ struct FansPwm
     void setPwm(uint8_t index, uint32_t duty);
 
 protected:
-    bool configureFanPwm(uint8_t index,
+    bool configureFanPwm(uint8_t fanIndex,
                          uint8_t pwmChannel,
                          uint8_t resolutionBits,
                          uint32_t pwmFrequency,

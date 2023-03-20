@@ -54,7 +54,7 @@ void printAddress(DeviceAddress deviceAddress)
     }
 }
 
-void setup(void)
+void setup()
 {
     Serial.begin(SERIAL_BAUD);
     Wire.begin(SCREEN_WIRE_SDA, SCREEN_WIRE_SCL);
@@ -115,39 +115,32 @@ void setup(void)
     }
 }
 
-void printFan(uint8_t fanIndex) {
+void printFan(uint8_t fanIndex)
+{
     r.display.screen.print(fanIndex);
     r.display.screen.print(" ");
     int16_t rpm{ r.controller.fansInfo[fanIndex].rpm };
-    if (rpm < 10)
-        r.display.screen.print(" ");
-    if (rpm < 100)
-        r.display.screen.print(" ");
-    if (rpm < 1000)
-        r.display.screen.print(" ");
+    if(rpm < 10) r.display.screen.print(" ");
+    if(rpm < 100) r.display.screen.print(" ");
+    if(rpm < 1000) r.display.screen.print(" ");
     r.display.screen.print(rpm);
     r.display.screen.print(" ");
     r.display.screen.print(r.controller.fansInfo[fanIndex].tempCelsius, 1);
     r.display.screen.print(" ");
-    uint8_t power{r.controller.fansInfo[fanIndex].power};
-    if (power < 10)
-        r.display.screen.print(" ");
-    if (power < 100)
-        r.display.screen.print(" ");
+    uint8_t power{ r.controller.fansInfo[fanIndex].power };
+    if(power < 10) r.display.screen.print(" ");
+    if(power < 100) r.display.screen.print(" ");
     r.display.screen.print(power);
     r.display.screen.print(" ");
-    uint16_t pwm{r.controller.fansInfo[fanIndex].powerPwm};
-    if (pwm < 10)
-        r.display.screen.print(" ");
-    if (pwm < 100)
-        r.display.screen.print(" ");
-    if (pwm < 1000)
-        r.display.screen.print(" ");
+    uint16_t pwm{ r.controller.fansInfo[fanIndex].powerPwm };
+    if(pwm < 10) r.display.screen.print(" ");
+    if(pwm < 100) r.display.screen.print(" ");
+    if(pwm < 1000) r.display.screen.print(" ");
     r.display.screen.print(pwm);
     r.display.screen.println();
 }
 
-void loop(void)
+void loop()
 {
     if(r.timers.oneSecondMs > (1000 - REDUCE_1000MS_CYCLE_MS))
     {

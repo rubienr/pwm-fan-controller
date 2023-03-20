@@ -1,6 +1,7 @@
 #include "SensorsTemp.h"
 
 
+
 SensorsTemp::SensorsTemp(DallasTemperature &sensors) : sensors(sensors) {}
 
 
@@ -11,7 +12,7 @@ void SensorsTemp::begin()
 }
 
 
-bool SensorsTemp::readTemperatureCelsius(uint8_t idx, float &tempC)
+bool SensorsTemp::readTemperatureCelsius(uint8_t idx, float &tempC) const
 {
     if(idx >= sizeof(addresses) / sizeof(DeviceAddress)) return false;
 
@@ -20,3 +21,5 @@ bool SensorsTemp::readTemperatureCelsius(uint8_t idx, float &tempC)
     if(tempC <= DEVICE_DISCONNECTED_C) return false;
     else return true;
 }
+
+void SensorsTemp::captureTemperature() { sensors.requestTemperatures(); }

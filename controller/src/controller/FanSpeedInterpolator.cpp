@@ -1,9 +1,9 @@
 #include "FanSpeedInterpolator.h"
+#include <cmath>
 
-
-uint8_t FanSpeedInterpolator::interpolate(const float &temperatureCelsius)
+uint8_t FanSpeedInterpolator::interpolatePowerFromTemperature(const float &temperatureCelsius) const
 {
-    int16_t reportedTemperature = static_cast<int16_t>((temperatureCelsius + 0.05) * 10);
+    auto reportedTemperature = static_cast<int16_t>(lroundf(temperatureCelsius * 10));
 
     if(reportedTemperature <= fanCurve[0].tempCentiCelsius) // min power
         return fanCurve[0].power;
@@ -15,20 +15,30 @@ uint8_t FanSpeedInterpolator::interpolate(const float &temperatureCelsius)
 }
 
 
-uint8_t FanSpeedInterpolator::interpolateSegment(uint8_t p0, uint8_t p1, const float &tempCentiCelsius)
+uint8_t FanSpeedInterpolator::interpolateSegment(uint8_t p0, uint8_t p1, const float &tempCentiCelsius) const
 {
     float k, x, d;
     computeCoefficients(p0, p1, tempCentiCelsius, k, x, d);
-    return static_cast<uint8_t>((k * x + d) + 0.5);
+    return static_cast<uint8_t>(lroundf(k * x + d));
 }
 
 
-void FanSpeedInterpolator::computeCoefficients(uint8_t p0, uint8_t p1, const float &tempCentiCelsius, float &k, float &x, float &d)
+void FanSpeedInterpolator::computeCoefficients(uint8_t p0, uint8_t p1, const float &tempCentiCelsius, float &k, float &x, float &d) const
 {
-    const float dy = fanCurve[p1].power - fanCurve[p0].power;
-    const float dx = fanCurve[p1].tempCentiCelsius - fanCurve[p0].tempCentiCelsius;
+    const float dy{ static_cast<float>(fanCurve[p1].power - fanCurve[p0].power) };
+    const float dx{ static_cast<float>(fanCurve[p1].tempCentiCelsius - fanCurve[p0].tempCentiCelsius) };
 
     k = dy / dx;
-    x = tempCentiCelsius - fanCurve[p0].tempCentiCelsius;
+    x = tempCentiCelsius - static_cast<float>(fanCurve[p0].tempCentiCelsius);
     d = fanCurve[0].power;
+}
+
+
+void FanSpeedInterpolator::setPowerCurvePoints(const uint8_t (&power)[4], const int16_t (&tempCentiCelsius)[4])
+{
+    for(uint8_t idx = 0; idx < 4; idx++)
+    {
+        fanCurve[idx].power = power[idx];
+        fanCurve[idx].tempCentiCelsius = tempCentiCelsius[idx];
+    }
 }

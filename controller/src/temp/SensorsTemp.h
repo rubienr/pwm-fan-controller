@@ -7,10 +7,8 @@ struct SensorsTemp
 {
     explicit SensorsTemp(DallasTemperature &sensors);
     void begin();
-    void captureTemperature() {
-        sensors.requestTemperatures();
-    }
-    bool readTemperatureCelsius(uint8_t idx, float &tempC);
+    void captureTemperature();
+    bool readTemperatureCelsius(uint8_t idx, float &tempC) const;
 
 protected:
     DallasTemperature &sensors;

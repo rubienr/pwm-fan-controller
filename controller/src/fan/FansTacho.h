@@ -10,8 +10,8 @@ struct FansTacho
     int16_t getRpm(uint8_t index);
 
 protected:
-    bool setupCounterUnit(pcnt_unit_t unit, pcnt_channel_t unitChannel, uint8_t gpioNum);
+    static bool setupCounterUnit(pcnt_unit_t unit, pcnt_channel_t unitChannel, uint8_t gpioNum);
     bool takeFromCounterUnit(pcnt_unit_t unit, uint8_t index);
 
-    int16_t rpm_x2[7]{ 0 };
+    int16_t rpmX2[7]{ 0 };
 };
