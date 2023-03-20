@@ -1,7 +1,6 @@
 #include "SensorsTemp.h"
 
 
-
 SensorsTemp::SensorsTemp(DallasTemperature &sensors) : sensors(sensors) {}
 
 

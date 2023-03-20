@@ -10,19 +10,19 @@ bool FansTacho::begin()
     bool success{ true };
 
 #if defined(FAN0)
-    success = setupCounterUnit(FAN0_TACHO_COUNTER_UNIT, FAN0_TACHO_COUNTER_CHANNEL, FAN0_TACHO_GPIO_NUM) ? success : false;
+    if(!setupCounterUnit(FAN0_TACHO_COUNTER_UNIT, FAN0_TACHO_COUNTER_CHANNEL, FAN0_TACHO_GPIO_NUM)) success = false;
 #endif
 #if defined(FAN1)
-    success = setupCounterUnit(FAN1_TACHO_COUNTER_UNIT, FAN1_TACHO_COUNTER_CHANNEL, FAN1_TACHO_GPIO_NUM) ? success : false;
+    if(!setupCounterUnit(FAN1_TACHO_COUNTER_UNIT, FAN1_TACHO_COUNTER_CHANNEL, FAN1_TACHO_GPIO_NUM)) success = false;
 #endif
 #if defined(FAN2)
-    success = setupCounterUnit(FAN2_TACHO_COUNTER_UNIT, FAN2_TACHO_COUNTER_CHANNEL, FAN2_TACHO_GPIO_NUM) ? success : false;
+    if(!setupCounterUnit(FAN2_TACHO_COUNTER_UNIT, FAN2_TACHO_COUNTER_CHANNEL, FAN2_TACHO_GPIO_NUM)) success = false;
 #endif
 #if defined(FAN3)
-    success = setupCounterUnit(FAN3_TACHO_COUNTER_UNIT, FAN3_TACHO_COUNTER_CHANNEL, FAN3_TACHO_GPIO_NUM) ? success : false;
+    if(!setupCounterUnit(FAN3_TACHO_COUNTER_UNIT, FAN3_TACHO_COUNTER_CHANNEL, FAN3_TACHO_GPIO_NUM)) success = false;
 #endif
 #if defined(FAN4)
-    success = setupCounterUnit(FAN4_TACHO_COUNTER_UNIT, FAN4_TACHO_COUNTER_CHANNEL, FAN4_TACHO_GPIO_NUM) ? success : false;
+    if(!setupCounterUnit(FAN4_TACHO_COUNTER_UNIT, FAN4_TACHO_COUNTER_CHANNEL, FAN4_TACHO_GPIO_NUM)) success = false;
 #endif
 
     return success;
@@ -51,19 +51,19 @@ bool FansTacho::processEverySecond()
     bool success{ true };
 
 #if defined(FAN0)
-    success = takeFromCounterUnit(FAN0_TACHO_COUNTER_UNIT, FAN0_INDEX) ? success : false;
+    if(!takeFromCounterUnit(FAN0_TACHO_COUNTER_UNIT, FAN0_INDEX)) success = false;
 #endif
 #if defined(FAN1)
-    success = takeFromCounterUnit(FAN1_TACHO_COUNTER_UNIT, FAN1_INDEX) ? success : false;
+    if(!takeFromCounterUnit(FAN1_TACHO_COUNTER_UNIT, FAN1_INDEX)) success = false;
 #endif
 #if defined(FAN2)
-    success = takeFromCounterUnit(FAN2_TACHO_COUNTER_UNIT, FAN2_INDEX) ? success : false;
+    if(!takeFromCounterUnit(FAN2_TACHO_COUNTER_UNIT, FAN2_INDEX)) success = false;
 #endif
 #if defined(FAN3)
-    success = takeFromCounterUnit(FAN3_TACHO_COUNTER_UNIT, FAN3_INDEX) ? success : false;
+    if(!takeFromCounterUnit(FAN3_TACHO_COUNTER_UNIT, FAN3_INDEX)) success = false;
 #endif
 #if defined(FAN4)
-    success = takeFromCounterUnit(FAN4_TACHO_COUNTER_UNIT, FAN4_INDEX) ? success : false;
+    if(!takeFromCounterUnit(FAN4_TACHO_COUNTER_UNIT, FAN4_INDEX)) success = false;
 #endif
 
     return success;

@@ -12,5 +12,5 @@ struct SensorsTemp
 
 protected:
     DallasTemperature &sensors;
-    DeviceAddress addresses [5] TEMP_SENSORS_ADDRESS;
+    DeviceAddress addresses[5] TEMP_SENSORS_ADDRESS;
 };
