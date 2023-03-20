@@ -46,7 +46,7 @@ bool FansTacho::setupCounterUnit(pcnt_unit_t unit, pcnt_channel_t unitChannel, u
 }
 
 
-bool FansTacho::processEverySecond()
+bool FansTacho::processEvery1000Ms()
 {
     bool success{ true };
 

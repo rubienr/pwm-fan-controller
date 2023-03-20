@@ -6,7 +6,7 @@
 struct FansTacho
 {
     bool begin();
-    bool processEverySecond();
+    bool processEvery1000Ms();
     int16_t getRpm(uint8_t index);
 
 protected:

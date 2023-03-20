@@ -1,6 +1,7 @@
 #pragma once
 
 // ----- section serial
+
 #define SERIAL_BAUD      115200
 
 // ----- section screen
@@ -33,6 +34,14 @@
     #define FAN0_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
     #define FAN0_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
 // clang-format on
+
+    #define FAN0_ALERT_BELOW_PWM       50   // trigger alert below PWM threshold
+    #define FAN0_ALERT_ABOVE_PWM       50   // trigger alert above PWM threshold
+    #define FAN0_ALERT_BELOW_RPM       0    // trigger alert below RPM threshold
+    #define FAN0_ALERT_ABOVE_RPM       1500 // trigger alert above RPM threshold
+    #define FAN0_ALERT_BELOW_TEMP_C    0.0  // trigger alert below temperature threshold
+    #define FAN0_ALERT_ABOVE_TEMP_C    60.0 // trigger alert above temperature threshold
+
 #endif
 
 #define FAN1
@@ -57,6 +66,13 @@
     #define FAN1_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
     #define FAN1_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
 // clang-format on
+
+    #define FAN1_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
+    #define FAN1_ALERT_ABOVE_PWM       254  // trigger alert above PWM threshold
+    #define FAN1_ALERT_BELOW_RPM       0    // trigger alert below RPM threshold
+    #define FAN1_ALERT_ABOVE_RPM       1500 // trigger alert above RPM threshold
+    #define FAN1_ALERT_BELOW_TEMP_C    0.0  // trigger alert below temperature threshold
+    #define FAN1_ALERT_ABOVE_TEMP_C    60.0 // trigger alert above temperature threshold
 #endif
 
 #define FAN2
@@ -80,7 +96,14 @@
     // clang-format off
     #define FAN2_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
     #define FAN2_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
-    // clang-format on
+// clang-format on
+
+    #define FAN2_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
+    #define FAN2_ALERT_ABOVE_PWM       254  // trigger alert above PWM threshold
+    #define FAN2_ALERT_BELOW_RPM       0    // trigger alert below RPM threshold
+    #define FAN2_ALERT_ABOVE_RPM       1500 // trigger alert above RPM threshold
+    #define FAN2_ALERT_BELOW_TEMP_C    0.0  // trigger alert below temperature threshold
+    #define FAN2_ALERT_ABOVE_TEMP_C    60.0 // trigger alert above temperature threshold
 #endif
 
 #define FAN3
@@ -104,7 +127,14 @@
     // clang-format off
     #define FAN3_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
     #define FAN3_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
-    // clang-format on
+// clang-format on
+
+    #define FAN3_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
+    #define FAN3_ALERT_ABOVE_PWM       254  // trigger alert above PWM threshold
+    #define FAN3_ALERT_BELOW_RPM       0    // trigger alert below RPM threshold
+    #define FAN3_ALERT_ABOVE_RPM       1500 // trigger alert above RPM threshold
+    #define FAN3_ALERT_BELOW_TEMP_C    0.0  // trigger alert below temperature threshold
+    #define FAN3_ALERT_ABOVE_TEMP_C    60.0 // trigger alert above temperature threshold
 #endif
 
 #define FAN4
@@ -128,7 +158,15 @@
     // clang-format off
     #define FAN4_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
     #define FAN4_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
-    // clang-format on
+// clang-format on
+
+    #define FAN4_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
+    #define FAN4_ALERT_ABOVE_PWM       254  // trigger alert above PWM threshold
+    #define FAN4_ALERT_BELOW_RPM       0    // trigger alert below RPM threshold
+    #define FAN4_ALERT_ABOVE_RPM       1500 // trigger alert above RPM threshold
+    #define FAN4_ALERT_BELOW_TEMP_C    0.0  // trigger alert below temperature threshold
+    #define FAN4_ALERT_ABOVE_TEMP_C    60.0 // trigger alert above temperature threshold
+
 #endif
 
 // ----- section temperature sensors (DS18xxx)
@@ -147,7 +185,9 @@
     }
 // clang-format on
 
-// ----- section timing
+// ----- section logging
 
-// values are re-computed about each 1000ms; depending on the sensor conversion delay (resolution) the delay needs to be reduced
-#define REDUCE_1000MS_CYCLE_MS      220
+#define SERIAL_AUTOREPORT           // enable auto reporting to serial console
+#if defined(SERIAL_AUTOREPORT)
+    #define SERIAL_AUTOREPORT_EVERY_SECONDS 60 // reports the fan status information every N seconds
+#endif
