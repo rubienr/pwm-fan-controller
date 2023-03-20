@@ -1,4 +1,4 @@
-#include "SensorsTemp.h"
+#include "TempSensors.h"
 
 
 bool TempSensorSpecs::hasAlert() const { return currentTempC < alertBelowTempC || currentTempC > alertAboveTempC; }

@@ -1,7 +1,7 @@
 #include "FansController.h"
 #include "fan/FansPwm.h"
 #include "fan/FansTacho.h"
-#include "temp/SensorsTemp.h"
+#include "temp/TempSensors.h"
 #include <cmath>
 
 

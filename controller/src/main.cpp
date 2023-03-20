@@ -8,7 +8,7 @@ int main(int argc, char **argv) { return 0; }
     #include "controller/FansController.h"
     #include "fan/FansPwm.h"
     #include "fan/FansTacho.h"
-    #include "temp/SensorsTemp.h"
+    #include "temp/TempSensors.h"
     #include <Adafruit_SSD1306.h>
     #include <Arduino.h>
     #include <DallasTemperature.h>
@@ -164,10 +164,10 @@ struct Firmware : public Resources
 
     static void reportAddress(const DeviceAddress &deviceAddress)
     {
-        for(unsigned char deviceAddress : deviceAddress)
+        for(unsigned char c : deviceAddress)
         {
-            if(deviceAddress < 16) Serial.print("0");
-            Serial.print(deviceAddress, HEX);
+            if(c < 16) Serial.print("0");
+            Serial.print(c, HEX);
         }
     }
 
