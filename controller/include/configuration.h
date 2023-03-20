@@ -8,10 +8,11 @@
 
 #define SCREEN_WIDTH_PX  128
 #define SCREEN_HEIGHT_PX 64
+#define SCREEN_ADDRESS   0x3C
 #define SCREEN_WIRE_SDA  5
 #define SCREEN_WIRE_SCL  4
 
-// ----- section fan interface
+// ----- section fan
 
 #define FAN0
 #if defined(FAN0)
@@ -175,6 +176,7 @@
 #define TEMP_SENSORS_PRECISION_BITS 10 // 9-12 bits; conversion time: 9-bit about 94ms, 12-bit about 750ms
 
 // clang-format off
+// List of up to 5 sensors that matches one or multiple fan(s) by index FANx_INDEX.
 #define TEMP_SENSORS_ADDRESS                                \
     {                                                       \
         { 0x28, 0xFF, 0x64, 0x02, 0x19, 0x86, 0x14, 0xFC }, \

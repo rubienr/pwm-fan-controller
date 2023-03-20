@@ -2,7 +2,10 @@
 #include "configuration.h"
 #include <Arduino.h>
 #include <driver/gpio.h>
-#include <soc/pcnt_struct.h>
+#include <driver/pcnt.h>
+
+
+bool FanTachoSpecs::hasAlert() const { return currentRpm < alertBelowRpm || currentRpm > alertAboveRpm; }
 
 
 bool FansTacho::begin()
@@ -10,26 +13,51 @@ bool FansTacho::begin()
     bool success{ true };
 
 #if defined(FAN0)
-    if(!setupCounterUnit(FAN0_TACHO_COUNTER_UNIT, FAN0_TACHO_COUNTER_CHANNEL, FAN0_TACHO_GPIO_NUM)) success = false;
+    fans[FAN0_INDEX].alertBelowRpm = FAN0_ALERT_BELOW_RPM;
+    fans[FAN0_INDEX].alertAboveRpm = FAN0_ALERT_ABOVE_RPM;
+    fans[FAN0_INDEX].counterUnit = FAN0_TACHO_COUNTER_UNIT;
+    fans[FAN0_INDEX].counterChannel = FAN0_TACHO_COUNTER_CHANNEL;
+    fans[FAN0_INDEX].counterGpioNum = FAN0_TACHO_GPIO_NUM;
+    if(!setupCounterUnit(FAN0_INDEX)) success = false;
 #endif
 #if defined(FAN1)
-    if(!setupCounterUnit(FAN1_TACHO_COUNTER_UNIT, FAN1_TACHO_COUNTER_CHANNEL, FAN1_TACHO_GPIO_NUM)) success = false;
+    fans[FAN1_INDEX].alertBelowRpm = FAN1_ALERT_BELOW_RPM;
+    fans[FAN1_INDEX].alertAboveRpm = FAN1_ALERT_ABOVE_RPM;
+    fans[FAN1_INDEX].counterUnit = FAN1_TACHO_COUNTER_UNIT;
+    fans[FAN1_INDEX].counterChannel = FAN1_TACHO_COUNTER_CHANNEL;
+    fans[FAN1_INDEX].counterGpioNum = FAN1_TACHO_GPIO_NUM;
+    if(!setupCounterUnit(FAN1_INDEX)) success = false;
 #endif
 #if defined(FAN2)
-    if(!setupCounterUnit(FAN2_TACHO_COUNTER_UNIT, FAN2_TACHO_COUNTER_CHANNEL, FAN2_TACHO_GPIO_NUM)) success = false;
+    fans[FAN2_INDEX].alertBelowRpm = FAN2_ALERT_BELOW_RPM;
+    fans[FAN2_INDEX].alertAboveRpm = FAN2_ALERT_ABOVE_RPM;
+    fans[FAN2_INDEX].counterUnit = FAN2_TACHO_COUNTER_UNIT;
+    fans[FAN2_INDEX].counterChannel = FAN2_TACHO_COUNTER_CHANNEL;
+    fans[FAN2_INDEX].counterGpioNum = FAN2_TACHO_GPIO_NUM;
+    if(!setupCounterUnit(FAN2_INDEX)) success = false;
 #endif
 #if defined(FAN3)
-    if(!setupCounterUnit(FAN3_TACHO_COUNTER_UNIT, FAN3_TACHO_COUNTER_CHANNEL, FAN3_TACHO_GPIO_NUM)) success = false;
+    fans[FAN3_INDEX].alertBelowRpm = FAN3_ALERT_BELOW_RPM;
+    fans[FAN3_INDEX].alertAboveRpm = FAN3_ALERT_ABOVE_RPM;
+    fans[FAN3_INDEX].counterUnit = FAN3_TACHO_COUNTER_UNIT;
+    fans[FAN3_INDEX].counterChannel = FAN3_TACHO_COUNTER_CHANNEL;
+    fans[FAN3_INDEX].counterGpioNum = FAN3_TACHO_GPIO_NUM;
+    if(!setupCounterUnit(FAN3_INDEX)) success = false;
 #endif
 #if defined(FAN4)
-    if(!setupCounterUnit(FAN4_TACHO_COUNTER_UNIT, FAN4_TACHO_COUNTER_CHANNEL, FAN4_TACHO_GPIO_NUM)) success = false;
+    fans[FAN4_INDEX].alertBelowRpm = FAN4_ALERT_BELOW_RPM;
+    fans[FAN4_INDEX].alertAboveRpm = FAN4_ALERT_ABOVE_RPM;
+    fans[FAN4_INDEX].counterUnit = FAN4_TACHO_COUNTER_UNIT;
+    fans[FAN4_INDEX].counterChannel = FAN4_TACHO_COUNTER_CHANNEL;
+    fans[FAN4_INDEX].counterGpioNum = FAN4_TACHO_GPIO_NUM;
+    if(!setupCounterUnit(FAN4_INDEX)) success = false;
 #endif
 
     return success;
 }
 
 
-bool FansTacho::setupCounterUnit(pcnt_unit_t unit, pcnt_channel_t unitChannel, uint8_t gpioNum)
+bool FansTacho::setupCounterUnit(uint8_t fanIndex)
 {
     pcnt_config_t configuration{};
     configuration.ctrl_gpio_num = -1;
@@ -38,10 +66,11 @@ bool FansTacho::setupCounterUnit(pcnt_unit_t unit, pcnt_channel_t unitChannel, u
     configuration.counter_l_lim = 0;
     configuration.counter_h_lim = 10000;
 
-    pinMode(gpioNum, INPUT_PULLDOWN);
-    configuration.pulse_gpio_num = gpioNum;
-    configuration.unit = unit;
-    configuration.channel = unitChannel;
+    const FanTachoSpecs &info{ fans[fanIndex] };
+    pinMode(info.counterGpioNum, INPUT_PULLDOWN);
+    configuration.pulse_gpio_num = info.counterGpioNum;
+    configuration.unit = info.counterUnit;
+    configuration.channel = info.counterChannel;
     return (ESP_OK == pcnt_unit_config(&configuration));
 }
 
@@ -51,34 +80,37 @@ bool FansTacho::processEvery1000Ms()
     bool success{ true };
 
 #if defined(FAN0)
-    if(!takeFromCounterUnit(FAN0_TACHO_COUNTER_UNIT, FAN0_INDEX)) success = false;
+    if(!takeFromCounterUnit(FAN0_INDEX)) success = false;
 #endif
 #if defined(FAN1)
-    if(!takeFromCounterUnit(FAN1_TACHO_COUNTER_UNIT, FAN1_INDEX)) success = false;
+    if(!takeFromCounterUnit(FAN1_INDEX)) success = false;
 #endif
 #if defined(FAN2)
-    if(!takeFromCounterUnit(FAN2_TACHO_COUNTER_UNIT, FAN2_INDEX)) success = false;
+    if(!takeFromCounterUnit(FAN2_INDEX)) success = false;
 #endif
 #if defined(FAN3)
-    if(!takeFromCounterUnit(FAN3_TACHO_COUNTER_UNIT, FAN3_INDEX)) success = false;
+    if(!takeFromCounterUnit(FAN3_INDEX)) success = false;
 #endif
 #if defined(FAN4)
-    if(!takeFromCounterUnit(FAN4_TACHO_COUNTER_UNIT, FAN4_INDEX)) success = false;
+    if(!takeFromCounterUnit(FAN4_INDEX)) success = false;
 #endif
 
     return success;
 }
 
 
-bool FansTacho::takeFromCounterUnit(pcnt_unit_t unit, uint8_t index)
+bool FansTacho::takeFromCounterUnit(uint8_t fanIndex)
 {
-    esp_err_t result{ pcnt_get_counter_value(unit, &rpmX2[index]) };
-    pcnt_counter_clear(unit);
-    return ESP_OK == result;
+    FanTachoSpecs &info{ fans[fanIndex] };
+    esp_err_t result{ pcnt_get_counter_value(info.counterUnit, &info.currentRpm) };
+    info.currentRpm *= 30; // rpm = (impulses / 2) * 60
+    pcnt_counter_clear(info.counterUnit);
+    info.hasError = ESP_OK != result;
+    return info.hasError;
 }
 
 
-int16_t FansTacho::getRpm(uint8_t index)
-{
-    return static_cast<int16_t>(rpmX2[index] * 30); // (impulses / 2) * 60
-}
+const FanTachoSpecs &FansTacho::getSpecs(uint8_t fanIndex) const { return fans[fanIndex]; }
+
+
+// int16_t FansTacho::getRpm(uint8_t fanIndex) { return static_cast<int16_t>(fans[fanIndex].currentRpm); }

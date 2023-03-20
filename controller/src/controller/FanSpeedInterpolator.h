@@ -1,4 +1,4 @@
-#include <inttypes.h>
+#include <cinttypes>
 
 
 struct CurvePoint
@@ -10,12 +10,15 @@ struct CurvePoint
 
 struct FanSpeedInterpolator
 {
-    uint8_t interpolatePowerFromTemperature(const float &temperatureCelsius) const;
     void setPowerCurvePoints(const uint8_t (&power)[4], const int16_t (&tempCentiCelsius)[4]);
+    void interpolatePowerFromTemperature(const float &temperatureCelsius);
+    uint8_t getInterpolatedPower() const;
+
 
 protected:
-    uint8_t interpolateSegment(uint8_t p0, uint8_t p1, const float &tempCentiCelsius) const;
+    [[nodiscard]] uint8_t interpolateSegment(uint8_t p0, uint8_t p1, const float &tempCentiCelsius) const;
     void computeCoefficients(uint8_t p0, uint8_t p1, const float &tempCentiCelsius, float &k, float &x, float &d) const;
 
-    CurvePoint fanCurve[4];
+    uint8_t interpolatedPower{ 0 }; // output range: 0 - 255
+    CurvePoint fanCurve[4]{};
 };

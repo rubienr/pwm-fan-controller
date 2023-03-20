@@ -1,17 +1,29 @@
 #pragma once
+#include <cinttypes>
 #include <driver/pcnt.h>
-#include <inttypes.h>
 
+struct FanTachoSpecs
+{
+    [[nodiscard]] bool hasAlert() const; // true if RPM is not within alertBelowRpm and alertAboveRpm
+    bool hasError{ false };              // true if tacho readout was erroneous
+    uint32_t alertBelowRpm{ 0 };
+    uint32_t alertAboveRpm{ 0 };
+    pcnt_unit_t counterUnit{};
+    pcnt_channel_t counterChannel{};
+    uint8_t counterGpioNum{ 0 };
+    int16_t currentRpm{ 0 }; // measured RPM in last time period of 1000ms
+};
 
 struct FansTacho
 {
     bool begin();
     bool processEvery1000Ms();
-    int16_t getRpm(uint8_t index);
+    // int16_t getRpm(uint8_t fanIndex);
+    [[nodiscard]] const FanTachoSpecs &getSpecs(uint8_t fanIndex) const;
 
 protected:
-    static bool setupCounterUnit(pcnt_unit_t unit, pcnt_channel_t unitChannel, uint8_t gpioNum);
-    bool takeFromCounterUnit(pcnt_unit_t unit, uint8_t index);
+    bool setupCounterUnit(uint8_t fanIndex);
+    bool takeFromCounterUnit(uint8_t fanIndex);
 
-    int16_t rpmX2[7]{ 0 };
+    FanTachoSpecs fans[5]{};
 };
