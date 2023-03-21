@@ -11,9 +11,12 @@
 #include <OneWire.h>
 #include <Wire.h>
 #include <elapsedMillis.h>
+#include "settings/FlashSettings.h"
 
 struct Resources
 {
+    FlashSettings settings{};
+
     struct
     {
         Adafruit_SSD1306 screen{ SCREEN_WIDTH_PX, SCREEN_HEIGHT_PX, &Wire, -1 };
@@ -54,7 +57,7 @@ struct Resources
         uint8_t index : 7; // 0 - 127
         bool lineAvailable{ false };
     } console;
-    ConsoleInterpreter<128> interpreter{ console.buffer, temp.sensors, fan.pwms, fan.tachos, controller, timers.autoreportSeconds };
+    ConsoleInterpreter<128> interpreter{ console.buffer, controller, timers.autoreportSeconds, settings };
 
     Resources() { console.index = 0; }
 };

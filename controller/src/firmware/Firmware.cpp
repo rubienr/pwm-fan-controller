@@ -194,7 +194,7 @@ void Firmware::reportFansInfo()
 void Firmware::setup()
 {
 
-    Serial.begin(SERIAL_BAUD, SERIAL_8N1);
+    Serial.begin(SERIAL_BAUD, SERIAL_CONFIG);
 
     { // display
         Wire.begin(SCREEN_WIRE_SDA, SCREEN_WIRE_SCL);
@@ -282,6 +282,9 @@ void Firmware::setup()
         Serial.print(getTrendSymbol(i));
         Serial.println(F("'=tempAlert"));
     }
+
+    Serial.print(millis());
+    Serial.println(" Enter command 'h' for help.");
 }
 
 
@@ -333,14 +336,18 @@ void Firmware::process()
                 ; // ignore \r
             else if(c == '\n')
             {
+#if defined(SERIAL_ECHO_ON)
                 Serial.print(c);
+#endif
                 c = 0;
                 console.lineAvailable = true;
                 console.index = 0;
             }
             else
             {
+#if defined(SERIAL_ECHO_ON)
                 Serial.print(c);
+#endif
                 console.index++;
             }
         }

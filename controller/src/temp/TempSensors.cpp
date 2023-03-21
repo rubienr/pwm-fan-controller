@@ -73,3 +73,6 @@ void TempSensors::requestTemperatureConversion() const { sensorBus.requestTemper
 
 
 const TempSensorSpecs &TempSensors::getSpecs(uint8_t tempSensorIndex) const { return sensors[tempSensorIndex]; }
+
+
+TempSensorSpecs &TempSensors::getSpecs(uint8_t tempSensorIndex) { return sensors[tempSensorIndex]; }

@@ -21,6 +21,7 @@ struct TempSensors
     void requestTemperatureConversion() const;
     bool fetchTemperatureCelsius(uint8_t idx);
     [[nodiscard]] const TempSensorSpecs &getSpecs(uint8_t tempSensorIndex) const;
+    [[nodiscard]] TempSensorSpecs &getSpecs(uint8_t tempSensorIndex);
 
 protected:
     DallasTemperature &sensorBus;

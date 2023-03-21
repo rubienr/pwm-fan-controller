@@ -3,6 +3,8 @@
 // ----- section serial
 
 #define SERIAL_BAUD      115200
+#define SERIAL_CONFIG    SERIAL_8N1
+#define SERIAL_ECHO_ON   // echoes received characters back to serial console, comment to disable
 
 // ----- section screen
 
@@ -33,7 +35,7 @@
     #define FAN0_TEMP_SENSOR_INDEX     0 // temperature sensor this fan depends on
     // clang-format off
     #define FAN0_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
-    #define FAN0_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
+    #define FAN0_CURVE_CENTI_CELSIUS { 0, 250, 700, 800} // input temperature; i.e. 123 corresponds to 12,34°C
 // clang-format on
 
     #define FAN0_ALERT_BELOW_PWM       50   // trigger alert below PWM threshold
@@ -65,7 +67,7 @@
 
     // clang-format off
     #define FAN1_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
-    #define FAN1_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
+    #define FAN1_CURVE_CENTI_CELSIUS { 0, 250, 700, 800} // input temperature; i.e. 123 corresponds to 12,34°C
 // clang-format on
 
     #define FAN1_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
@@ -96,7 +98,7 @@
 
     // clang-format off
     #define FAN2_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
-    #define FAN2_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
+    #define FAN2_CURVE_CENTI_CELSIUS { 0, 250, 700, 800} // input temperature; i.e. 123 corresponds to 12,34°C
 // clang-format on
 
     #define FAN2_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
@@ -127,7 +129,7 @@
 
     // clang-format off
     #define FAN3_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
-    #define FAN3_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
+    #define FAN3_CURVE_CENTI_CELSIUS { 0, 250, 700, 800} // input temperature; i.e. 123 corresponds to 12,34°C
 // clang-format on
 
     #define FAN3_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
@@ -158,7 +160,7 @@
 
     // clang-format off
     #define FAN4_CURVE_POWER         {50,  50, 100, 100} // target power, 0-255
-    #define FAN4_CURVE_CENTI_CELSIUS { 0, 250, 800, 800} // input temperature; i.e. 123 corresponds to 12,34°C
+    #define FAN4_CURVE_CENTI_CELSIUS { 0, 250, 700, 800} // input temperature; i.e. 123 corresponds to 12,34°C
 // clang-format on
 
     #define FAN4_ALERT_BELOW_PWM       1    // trigger alert below PWM threshold
@@ -191,5 +193,5 @@
 
 #define SERIAL_AUTOREPORT           // enable auto reporting to serial console
 #if defined(SERIAL_AUTOREPORT)
-    #define SERIAL_AUTOREPORT_EVERY_SECONDS 60 // reports the fan status information every N seconds
+    #define SERIAL_AUTOREPORT_EVERY_SECONDS 0 // 0=disabled, reports the fan status information every N seconds
 #endif

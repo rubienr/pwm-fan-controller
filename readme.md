@@ -30,17 +30,18 @@ References
   - tacho signal PCNT setup error
   - temperature sensor readout error
 - fault action
-  - fall back to configured error-PWM
-- alerting if parameter exceed configured boundary:
+  - fall back to specific error-PWM
+- alert if parameter exceeds configured min/max boundary:
   - RPM
   - temperature
   - PWM
 - reporting
   - briefly on display
   - detailed by serial
+- configuration at runtime: 
+  - serial console, see 'h' for help
  
 ## Roadmap (not implemented yet)
-- configuration at runtime
 - store/load configuration to/from flash
-- config update via Wifi
-- firmware update via Wifi
+- modify sensor address at runtime
+- OTA firmware update

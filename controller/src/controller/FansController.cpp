@@ -85,3 +85,50 @@ void FansController::updateFanInfo(uint8_t fanIndex, uint8_t fanTempSensorIndex)
 }
 
 const FanInfo &FansController::getFanInfo(uint8_t fanIndex) const { return fansInfo[fanIndex]; }
+
+
+FanInfo &FansController::getFanInfo(uint8_t fanIndex) { return fansInfo[fanIndex]; }
+
+bool FansController::updateFanTempSensorIndex(uint8_t fanIndex, uint8_t tempSensorIndex)
+{
+    bool hasFan{ false };
+#if defined(FAN0)
+    hasFan = (FAN0_INDEX == fanIndex) || hasFan;
+#endif
+#if defined(FAN1)
+    hasFan = (FAN1_INDEX == fanIndex) || hasFan;
+#endif
+#if defined(FAN2)
+    hasFan = (FAN2_INDEX == fanIndex) || hasFan;
+#endif
+#if defined(FAN3)
+    hasFan = (FAN3_INDEX == fanIndex) || hasFan;
+#endif
+#if defined(FAN4)
+    hasFan = (FAN4_INDEX == fanIndex) || hasFan;
+#endif
+
+    bool hasSensor{ false };
+#if defined(FAN0)
+    hasSensor = (FAN0_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
+#endif
+#if defined(FAN1)
+    hasSensor = (FAN1_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
+#endif
+#if defined(FAN2)
+    hasSensor = (FAN2_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
+#endif
+#if defined(FAN3)
+    hasSensor = (FAN3_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
+#endif
+#if defined(FAN4)
+    hasSensor = (FAN4_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
+#endif
+
+    if(hasFan && hasSensor)
+    {
+        fansInfo[fanIndex].tempSpecs = &sensors.getSpecs(tempSensorIndex);
+        return true;
+    }
+    return false;
+}

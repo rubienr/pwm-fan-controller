@@ -18,8 +18,8 @@ struct FansTacho
 {
     bool begin();
     bool processEvery1000Ms();
-    // int16_t getRpm(uint8_t fanIndex);
     [[nodiscard]] const FanTachoSpecs &getSpecs(uint8_t fanIndex) const;
+    [[nodiscard]] FanTachoSpecs &getSpecs(uint8_t fanIndex);
 
 protected:
     bool setupCounterUnit(uint8_t fanIndex);

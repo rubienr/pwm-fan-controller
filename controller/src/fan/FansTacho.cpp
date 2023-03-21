@@ -113,4 +113,4 @@ bool FansTacho::takeFromCounterUnit(uint8_t fanIndex)
 const FanTachoSpecs &FansTacho::getSpecs(uint8_t fanIndex) const { return fans[fanIndex]; }
 
 
-// int16_t FansTacho::getRpm(uint8_t fanIndex) { return static_cast<int16_t>(fans[fanIndex].currentRpm); }
+FanTachoSpecs &FansTacho::getSpecs(uint8_t fanIndex) { return fans[fanIndex]; }
