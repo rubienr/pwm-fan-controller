@@ -457,7 +457,6 @@ protected:
         for(auto idx : definedFanIndices)
             printTempSensorIndex(idx);
         return true;
-        return false;
     }
 
 
