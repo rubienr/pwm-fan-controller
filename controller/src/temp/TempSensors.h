@@ -22,6 +22,7 @@ struct TempSensors
     bool fetchTemperatureCelsius(uint8_t idx);
     [[nodiscard]] const TempSensorSpec &getSpecs(uint8_t tempSensorIndex) const;
     [[nodiscard]] TempSensorSpec &getSpecs(uint8_t tempSensorIndex);
+    bool setDeviceAddress(uint8_t tempSensorIndex, const DeviceAddress &address);
 
 protected:
     DallasTemperature &sensorBus;

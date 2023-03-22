@@ -4,6 +4,7 @@
 #include "controller/FansController.h"
 #include "fan/FansPwm.h"
 #include "fan/FansTacho.h"
+#include "settings/FlashSettings.h"
 #include "temp/TempSensors.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
@@ -11,7 +12,6 @@
 #include <OneWire.h>
 #include <Wire.h>
 #include <elapsedMillis.h>
-#include "settings/FlashSettings.h"
 
 struct Resources
 {
@@ -57,7 +57,7 @@ struct Resources
         uint8_t index : 7; // 0 - 127
         bool lineAvailable{ false };
     } console;
-    ConsoleInterpreter<128> interpreter{ console.buffer, controller, timers.autoreportSeconds, settings };
+    ConsoleInterpreter<128> interpreter{ console.buffer, controller, temp.sensors, timers.autoreportSeconds, settings };
 
     Resources() { console.index = 0; }
 };

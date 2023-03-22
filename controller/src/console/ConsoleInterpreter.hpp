@@ -23,28 +23,30 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
     };
 
 
-    ConsoleInterpreter(char (&buffer)[BufferSize], FansController &controller, unsigned long &autoreportDelayS, FlashSettings &settings) :
-    buffer(buffer), controller(controller), autoreportDelayS(autoreportDelayS), settings(settings)
+    ConsoleInterpreter(char (&buffer)[BufferSize], FansController &controller, TempSensors &sensors, unsigned long &autoreportDelayS, FlashSettings &settings) :
+    buffer(buffer), controller(controller), sensors(sensors), autoreportDelayS(autoreportDelayS), settings(settings)
     {
         // clang-format off
-        commandList.push_back({ .name='h', .callback = &ClassType::commandPrintHelp,              .help = "print this help text:              h" });
-        commandList.push_back({ .name='f', .callback = &ClassType::commandPrintFans,              .help = "print fan(s):                      f [fanIndex]?" });
-        commandList.push_back({ .name='A', .callback = &ClassType::commandSetAutoreportSeconds,   .help = "set   auto report seconds:         A [reportSeconds]" });
-        commandList.push_back({ .name='a', .callback = &ClassType::commandPrintAutoreportSeconds, .help = "print auto report seconds:         a" });
-        commandList.push_back({ .name='C', .callback = &ClassType::commandSetPowerCurve,          .help = "set   power curve:                 C [fanIndex] [temp0] [power0] [temp1] [power1] [temp2] [power2] [temp3] [power3]" });
-        commandList.push_back({ .name='c', .callback = &ClassType::commandPrintPowerCurve,        .help = "print power curve(s):              c [fanIndex]?" });
-        commandList.push_back({ .name='P', .callback = &ClassType::commandSetPwmAlert,            .help = "set   PWM alert:                   P [fanIndex] [pwmMin] [pamMax]" });
-        commandList.push_back({ .name='p', .callback = &ClassType::commandPrintPwmAlert,          .help = "print PWM alert(s):                p [fanIndex]?" });
-        commandList.push_back({ .name='R', .callback = &ClassType::commandSetRpmAlert,            .help = "set   RPM alert:                   R [fanIndex] [rpmMin] [rpmMax]" });
-        commandList.push_back({ .name='r', .callback = &ClassType::commandPrintRpmAlert,          .help = "print RPM alert(s):                r [fanIndex]?" });
-        commandList.push_back({ .name='T', .callback = &ClassType::commandSetTemperatureAlert,    .help = "set   temperature alert:           T [fanIndex] [tempMin] [tempMax]" });
-        commandList.push_back({ .name='t', .callback = &ClassType::commandPrintTemperatureAlert,  .help = "print temperature alert(s):        t [fanIndex]?" });
-        commandList.push_back({ .name='I', .callback = &ClassType::commandSetTemperatureSensor,   .help = "set   temperature sensor index:    I [fanIndex] [tempSensorIndex]" });
-        commandList.push_back({ .name='i', .callback = &ClassType::commandPrintTemperatureSensor, .help = "print temperature sensor(s) index: i [fanIndex]?" });
-        commandList.push_back({ .name='S', .callback = &ClassType::commandSaveSettings,           .help = "save  settings:                    S" });
-        commandList.push_back({ .name='s', .callback = &ClassType::commandLoadSettings,           .help = "load  settings:                    s" });
-        commandList.push_back({ .name='x', .callback = &ClassType::commandResetSettings,          .help = "reset settings:                    x" });
-        commandList.push_back({ .name='X', .callback = &ClassType::commandReboot,                 .help = "reboot device:                     X" });
+        commandList.push_back({ .name='h', .callback = &ClassType::commandPrintHelp,           .help = "print this help text:                h" });
+        commandList.push_back({ .name='f', .callback = &ClassType::commandPrintFans,           .help = "print fan(s):                        f [fanIndex]?" });
+        commandList.push_back({ .name='L', .callback = &ClassType::commandSetAutoreportSec,    .help = "set   auto report seconds:           L [reportSeconds]" });
+        commandList.push_back({ .name='l', .callback = &ClassType::commandPrintAutoreportSec,  .help = "print auto report seconds:           l" });
+        commandList.push_back({ .name='C', .callback = &ClassType::commandSetPowerCurve,       .help = "set   power curve:                   C [fanIndex] [temp0] [power0] [temp1] [power1] [temp2] [power2] [temp3] [power3]" });
+        commandList.push_back({ .name='c', .callback = &ClassType::commandPrintPowerCurve,     .help = "print power curve(s):                c [fanIndex]?" });
+        commandList.push_back({ .name='P', .callback = &ClassType::commandSetPwmAlert,         .help = "set   PWM alert:                     P [fanIndex] [pwmMin] [pamMax]" });
+        commandList.push_back({ .name='p', .callback = &ClassType::commandPrintPwmAlert,       .help = "print PWM alert(s):                  p [fanIndex]?" });
+        commandList.push_back({ .name='R', .callback = &ClassType::commandSetRpmAlert,         .help = "set   RPM alert:                     R [fanIndex] [rpmMin] [rpmMax]" });
+        commandList.push_back({ .name='r', .callback = &ClassType::commandPrintRpmAlert,       .help = "print RPM alert(s):                  r [fanIndex]?" });
+        commandList.push_back({ .name='T', .callback = &ClassType::commandSetTempAlert,        .help = "set   temperature alert:             T [fanIndex] [tempMin] [tempMax]" });
+        commandList.push_back({ .name='t', .callback = &ClassType::commandPrintTempAlert,      .help = "print temperature alert(s):          t [fanIndex]?" });
+        commandList.push_back({ .name='I', .callback = &ClassType::commandSetTempSensorIndex,  .help = "set   temperature sensor index:      I [fanIndex] [tempSensorIndex]" });
+        commandList.push_back({ .name='i', .callback = &ClassType::commandPrintTempSensorIndex,.help = "print temperature sensor(s) index:   i [fanIndex]?" });
+        commandList.push_back({ .name='A', .callback = &ClassType::commandSetTempSensorAddr,   .help = "set   temperature sensor address:    A [tempSensorIndex] [aa] [aa] [aa] [aa] [aa] [aa] [aa] [aa]" });
+        commandList.push_back({ .name='a', .callback = &ClassType::commandPrintTempSensorAddr, .help = "print temperature sensor(s) address: a [tempSensorIndex]?" });
+        commandList.push_back({ .name='S', .callback = &ClassType::commandSaveSettings,        .help = "save  settings:                      S" });
+        commandList.push_back({ .name='s', .callback = &ClassType::commandLoadSettings,        .help = "load  settings:                      s" });
+        commandList.push_back({ .name='x', .callback = &ClassType::commandResetSettings,       .help = "reset settings:                      x" });
+        commandList.push_back({ .name='X', .callback = &ClassType::commandReboot,              .help = "reboot device:                       X" });
         // clang-format on
 
         for(const auto &item : commandList)
@@ -139,30 +141,43 @@ protected:
     bool commandPrintHelp(char (&line)[BufferSize])
     {
         // examples: "h"
-        Serial.println("Help:");
+        Serial.print(millis());
+        Serial.println(" # Help:");
         for(const auto c : commandList)
         {
+            Serial.print(millis());
+            Serial.print(" # ");
             Serial.print(c.name);
             Serial.print("  ");
             Serial.println(c.help.c_str());
         }
 
-        Serial.println("Units:");
-        Serial.println("fanIndex:        uint8");
-        Serial.println("tempSensorIndex: uint8");
-        Serial.println("reportSeconds:   uint16, 0=disable");
-        Serial.println("power[N]:        uint8");
-        Serial.println("pwm[Min|Max]:    uint8");
-        Serial.println("rpm[Min|Max]:    uint16");
-        Serial.println("temp[Min|Max]:   int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501");
-        Serial.println("temp[N]:         int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501, temp[N] < temp[N+1]");
-
+        Serial.print(millis());
+        Serial.println(" # Units:");
+        Serial.print(millis());
+        Serial.println(" # fanIndex:        uint8");
+        Serial.print(millis());
+        Serial.println(" # tempSensorIndex: uint8");
+        Serial.print(millis());
+        Serial.println(" # reportSeconds:   uint16, 0=disable");
+        Serial.print(millis());
+        Serial.println(" # power[N]:        uint8");
+        Serial.print(millis());
+        Serial.println(" # pwm[Min|Max]:    uint8");
+        Serial.print(millis());
+        Serial.println(" # rpm[Min|Max]:    uint16");
+        Serial.print(millis());
+        Serial.println(" # temp[Min|Max]:   int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501");
+        Serial.print(millis());
+        Serial.println(" # temp[N]:         int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501, temp[N] < temp[N+1]");
+        Serial.print(millis());
+        Serial.println(" # [aa]:            1-byte HEX address, i.e. AA, Fe, be");
         return true;
     }
 
-    bool commandSetAutoreportSeconds(char (&line)[BufferSize])
+    bool commandSetAutoreportSec(char (&line)[BufferSize])
     {
-        // examples: "A0", "A 0", "A60", "A 60"
+        // examples: "L0", "L 0", "L60", "L 60"
         char c;
         unsigned long autoreportSeconds;
         if(2 <= sscanf(line, "%c %lu", &c, &autoreportSeconds))
@@ -174,9 +189,9 @@ protected:
     }
 
 
-    bool commandPrintAutoreportSeconds(char (&)[BufferSize])
+    bool commandPrintAutoreportSec(char (&)[BufferSize])
     {
-        // examples: "a", "a "
+        // examples: "l", "l "
         Serial.print("A ");
         Serial.println(autoreportDelayS);
         return true;
@@ -329,7 +344,7 @@ protected:
         // examples: "p", "p0", "p 0"
         char c;
         uint8_t fanIndex;
-        if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
+        if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
             if(isAnyFanWithIndexDefined(fanIndex)) return printPwmAlert(fanIndex);
             return false;
@@ -360,7 +375,7 @@ protected:
         // examples: "r", "r0", "r 0"
         char c;
         uint8_t fanIndex;
-        if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
+        if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
             if(isAnyFanWithIndexDefined(fanIndex)) return printRpmAlert(fanIndex);
             return false;
@@ -372,7 +387,7 @@ protected:
         return true;
     }
 
-    bool commandSetTemperatureAlert(char (&line)[BufferSize])
+    bool commandSetTempAlert(char (&line)[BufferSize])
     {
         // examples: "T 0 0 1501", "T0 0 1501"
         char c;
@@ -388,12 +403,12 @@ protected:
     }
 
 
-    bool commandPrintTemperatureAlert(char (&line)[BufferSize])
+    bool commandPrintTempAlert(char (&line)[BufferSize])
     {
         // examples: "t", "t0", "t 0"
         char c;
         uint8_t fanIndex;
-        if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
+        if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
             if(isAnyFanWithIndexDefined(fanIndex)) return printTempAlert(fanIndex);
             return false;
@@ -406,7 +421,7 @@ protected:
     }
 
 
-    bool commandSetTemperatureSensor(char (&line)[BufferSize])
+    bool commandSetTempSensorIndex(char (&line)[BufferSize])
     {
         // examples: "I0 1", "I 0 1"
         char c;
@@ -417,7 +432,7 @@ protected:
     }
 
 
-    bool printTemperatureSensorIndex(uint8_t fanIndex)
+    bool printTempSensorIndex(uint8_t fanIndex)
     {
         Serial.print("I ");
         Serial.print(fanIndex);
@@ -428,19 +443,68 @@ protected:
     }
 
 
-    bool commandPrintTemperatureSensor(char (&line)[BufferSize])
+    bool commandPrintTempSensorIndex(char (&line)[BufferSize])
     {
         // examples: "i", "i0", "i 0"
         char c;
         uint8_t fanIndex;
-        if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
+        if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return printTemperatureSensorIndex(fanIndex);
+            if(isAnyFanWithIndexDefined(fanIndex)) return printTempSensorIndex(fanIndex);
             return false;
         }
 
         for(auto idx : definedFanIndices)
-            printTemperatureSensorIndex(idx);
+            printTempSensorIndex(idx);
+        return true;
+        return false;
+    }
+
+
+    bool printTempSensorAddress(uint8_t tempSensorIndex)
+    {
+        Serial.print("A ");
+        Serial.print(tempSensorIndex);
+
+        for(unsigned char c : sensors.getSpecs(tempSensorIndex).sensorAddress)
+        {
+            Serial.print(" ");
+            if(c < 16) Serial.print("0");
+            Serial.print(c, HEX);
+        }
+
+        Serial.println();
+        return true;
+    }
+
+
+    bool commandSetTempSensorAddr(char (&line)[BufferSize])
+    {
+        // example: "A 0 00 00 00 00 00 00 00 00"
+        char c;
+        uint8_t tempSensorIndex;
+        uint8_t address[8];
+        if((2 + 8) <= sscanf(line, "%c %hhu %hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx", &c, &tempSensorIndex, &address[0],
+                             &address[1], &address[2], &address[3], &address[4], &address[5], &address[6], &address[7]))
+        {
+            if(tempSensorIndex < getDefinedTempSensorsCount()) return sensors.setDeviceAddress(tempSensorIndex, address);
+        }
+        return false;
+    }
+
+
+    bool commandPrintTempSensorAddr(char (&line)[BufferSize])
+    {
+        // examples: "a", "a0", "a 0"
+        char c;
+        uint8_t tempSensorIndex;
+        if(2 <= sscanf(line, "%c %hhu", &c, &tempSensorIndex))
+        {
+            if(tempSensorIndex < getDefinedTempSensorsCount()) return printTempSensorAddress(tempSensorIndex);
+            return false;
+        }
+        for(auto idx = 0; idx < getDefinedTempSensorsCount(); idx++)
+            printTempSensorAddress(idx);
         return true;
     }
 
@@ -453,6 +517,7 @@ protected:
 
     bool commandResetSettings(char (&)[BufferSize]) { return settings.resetSettings(); }
 
+
     bool commandReboot(char (&)[BufferSize])
     {
         ESP.restart();
@@ -462,8 +527,10 @@ protected:
 
     char (&buffer)[BufferSize];
     FansController &controller;
+    TempSensors &sensors;
     unsigned long &autoreportDelayS;
     FlashSettings &settings;
+
     std::unordered_map<uint8_t, CommandCallback> commandMap;
     std::vector<Command> commandList;
 };

@@ -54,3 +54,14 @@ const TempSensorSpec &TempSensors::getSpecs(uint8_t tempSensorIndex) const { ret
 
 
 TempSensorSpec &TempSensors::getSpecs(uint8_t tempSensorIndex) { return sensors[tempSensorIndex]; }
+
+
+bool TempSensors::setDeviceAddress(uint8_t tempSensorIndex, const DeviceAddress &deviceAddress)
+{
+    if(tempSensorIndex >= getDefinedTempSensorsCount()) return false;
+
+    const uint8_t *address{ reinterpret_cast<const uint8_t *>(&deviceAddress) };
+    for(size_t idx{ 0 }; idx < sizeof(DeviceAddress); idx++)
+        sensors[tempSensorIndex].sensorAddress[idx] = address[idx];
+    return true;
+}
