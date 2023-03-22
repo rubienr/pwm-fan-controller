@@ -1,4 +1,11 @@
 #pragma once
+#include <cinttypes>
+
+// ----- section: version
+
+#define VERSION_MAJOR    0
+#define VERSION_MINOR    0
+#define VERSION_PATCH    1
 
 // ----- section serial
 
@@ -195,3 +202,244 @@
 #if defined(SERIAL_AUTOREPORT)
     #define SERIAL_AUTOREPORT_EVERY_SECONDS 0 // 0=disabled, reports the fan status information every N seconds
 #endif
+
+
+// ----- plausibility checks helpers
+
+const bool isFan0Defined
+{
+#if defined(FAN0)
+    true
+#else
+    false
+#endif
+};
+
+const bool isFan1Defined
+{
+#if defined(FAN1)
+    true
+#else
+    false
+#endif
+};
+
+const bool isFan2Defined
+{
+#if defined(FAN2)
+    true
+#else
+    false
+#endif
+};
+
+const bool isFan3Defined
+{
+#if defined(FAN3)
+    true
+#else
+    false
+#endif
+};
+
+const bool isFan4Defined
+{
+#if defined(FAN4)
+    true
+#else
+    false
+#endif
+};
+
+
+bool constexpr isFan0Index(uint8_t fanIndex)
+{
+    return
+#if defined(FAN0_INDEX)
+    FAN0_INDEX == fanIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan1Index(uint8_t fanIndex)
+{
+    return
+#if defined(FAN1_INDEX)
+    FAN1_INDEX == fanIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan2Index(uint8_t fanIndex)
+{
+    return
+#if defined(FAN2_INDEX)
+    FAN2_INDEX == fanIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan3Index(uint8_t fanIndex)
+{
+    return
+#if defined(FAN3_INDEX)
+    FAN3_INDEX == fanIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan4Index(uint8_t fanIndex)
+{
+    return
+#if defined(FAN4_INDEX)
+    FAN4_INDEX == fanIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan0TempSensorIndex(uint8_t fanTempSensorIndex)
+{
+    return
+#if defined(FAN0_INDEX)
+    FAN0_INDEX == fanTempSensorIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan1TempSensorIndex(uint8_t fanTempSensorIndex)
+{
+    return
+#if defined(FAN1_INDEX)
+    FAN1_INDEX == fanTempSensorIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan2TempSensorIndex(uint8_t fanTempSensorIndex)
+{
+    return
+#if defined(FAN2_INDEX)
+    FAN2_INDEX == fanTempSensorIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan3TempSensorIndex(uint8_t fanTempSensorIndex)
+{
+    return
+#if defined(FAN3_INDEX)
+    FAN3_INDEX == fanTempSensorIndex;
+#else
+    false;
+#endif
+}
+
+
+bool constexpr isFan4TempSensorIndex(uint8_t fanTempSensorIndex)
+{
+    return
+#if defined(FAN4_INDEX)
+    FAN4_INDEX == fanTempSensorIndex;
+#else
+    false;
+#endif
+}
+
+
+// clang-format off
+#define isFanNDefinedAndHasIndexGenerator(x)                        \
+bool constexpr isFan##x##DefinedAndHasIndex(uint8_t  fanIndex) \
+{                                                                   \
+    return isFan##x##Defined && isFan##x##Index(fanIndex);          \
+}
+
+isFanNDefinedAndHasIndexGenerator(0)
+isFanNDefinedAndHasIndexGenerator(1)
+isFanNDefinedAndHasIndexGenerator(2)
+isFanNDefinedAndHasIndexGenerator(3)
+isFanNDefinedAndHasIndexGenerator(4)
+
+bool constexpr isAnyFanWithIndexDefined(const uint8_t fanIndex)
+{
+    return isFan0DefinedAndHasIndex(fanIndex) ||
+           isFan1DefinedAndHasIndex(fanIndex) ||
+           isFan2DefinedAndHasIndex(fanIndex) ||
+           isFan3DefinedAndHasIndex(fanIndex) ||
+           isFan4DefinedAndHasIndex(fanIndex);
+}
+
+#define isFanNDefinedAndHasTempSensorIndexGenerator(x)                           \
+bool constexpr isFan##x##DefinedAndHasTempSensorIndex(uint8_t  sensorIndex) \
+{                                                                                \
+    return isFan##x##Defined && isFan##x##TempSensorIndex(sensorIndex);          \
+}
+
+isFanNDefinedAndHasTempSensorIndexGenerator(0)
+isFanNDefinedAndHasTempSensorIndexGenerator(1)
+isFanNDefinedAndHasTempSensorIndexGenerator(2)
+isFanNDefinedAndHasTempSensorIndexGenerator(3)
+isFanNDefinedAndHasTempSensorIndexGenerator(4)
+
+bool constexpr isAnyFanWithIndexTempsensorDefined(const uint8_t  tempSensorIndex)
+{
+    return isFan1DefinedAndHasTempSensorIndex(tempSensorIndex) ||
+           isFan1DefinedAndHasTempSensorIndex(tempSensorIndex) ||
+           isFan1DefinedAndHasTempSensorIndex(tempSensorIndex) ||
+           isFan1DefinedAndHasTempSensorIndex(tempSensorIndex) ||
+           isFan1DefinedAndHasTempSensorIndex(tempSensorIndex);
+}
+// clang-format on
+
+uint8_t constexpr getDefinedFansCount()
+{
+    uint8_t count{ 0 };
+    count = (isFan0Defined) ? count + 1 : count;
+    count = (isFan1Defined) ? count + 1 : count;
+    count = (isFan2Defined) ? count + 1 : count;
+    count = (isFan3Defined) ? count + 1 : count;
+    count = (isFan4Defined) ? count + 1 : count;
+    return count;
+}
+
+const uint8_t definedFanIndices[getDefinedFansCount()]
+{
+#if defined(FAN0)
+    FAN0_INDEX,
+#endif
+#if defined(FAN1)
+    FAN1_INDEX,
+#endif
+#if defined(FAN2)
+    FAN2_INDEX,
+#endif
+#if defined(FAN3)
+    FAN3_INDEX,
+#endif
+#if defined(FAN4)
+    FAN4_INDEX,
+#endif
+};
+
+
+uint8_t constexpr getDefinedTempSensorsCount()
+{
+    using Address = uint8_t[8];
+    Address addresses[] TEMP_SENSORS_ADDRESS;
+    return sizeof(addresses) / sizeof(Address);
+}

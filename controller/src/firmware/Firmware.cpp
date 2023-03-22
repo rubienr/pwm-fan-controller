@@ -49,63 +49,17 @@ void Firmware::displayFansInfo()
 {
     display.screen.println("#  r/m degC  Pow% PWM");
 
-#if defined(FAN0)
-    displayFan(FAN0_INDEX);
-#endif
-#if defined(FAN1)
-    displayFan(FAN1_INDEX);
-#endif
-#if defined(FAN2)
-    displayFan(FAN2_INDEX);
-#endif
-#if defined(FAN3)
-    displayFan(FAN3_INDEX);
-#endif
-#if defined(FAN4)
-    displayFan(FAN4_INDEX);
-#endif
+    for(auto fanIndex : definedFanIndices)
+        displayFan(fanIndex);
 
     display.screen.print("Trend [");
-#if defined(FAN0)
+    for(auto fanIndex : definedFanIndices)
     {
         display.screen.print(" ");
-        const FanInfo &info{ controller.getFanInfo(FAN0_INDEX) };
+        const FanInfo &info{ controller.getFanInfo(fanIndex) };
         display.screen.print(getTrendSymbol(info));
-        reportFanInfo(FAN0_INDEX, info);
+        reportFanInfo(fanIndex, info);
     }
-#endif
-#if defined(FAN1)
-    {
-        display.screen.print(" ");
-        const FanInfo &info{ controller.getFanInfo(FAN1_INDEX) };
-        display.screen.print(getTrendSymbol(info));
-        reportFanInfo(FAN1_INDEX, info);
-    }
-#endif
-#if defined(FAN2)
-    {
-        display.screen.print(" ");
-        const FanInfo &info{ controller.getFanInfo(FAN2_INDEX) };
-        display.screen.print(getTrendSymbol(info));
-        reportFanInfo(FAN2_INDEX, info);
-    }
-#endif
-#if defined(FAN3)
-    {
-        display.screen.print(" ");
-        const FanInfo &info{ controller.getFanInfo(FAN3_INDEX) };
-        display.screen.print(getTrendSymbol(info));
-        reportFanInfo(FAN3_INDEX, info);
-    }
-#endif
-#if defined(FAN4)
-    {
-        display.screen.print(" ");
-        const FanInfo &info{ controller.getFanInfo(FAN4_INDEX) };
-        display.screen.print(getTrendSymbol(info));
-        reportFanInfo(FAN4_INDEX, info);
-    }
-#endif
     display.screen.println(" ]");
 }
 
@@ -123,7 +77,7 @@ void Firmware::reportAddress(const DeviceAddress &deviceAddress)
 void Firmware::reportTemperatureSensor(uint8_t sensorIndex, const DeviceAddress &address)
 {
     Serial.print(millis());
-    Serial.print(F(" sensorIndex="));
+    Serial.print(F(" # sensorIndex="));
     Serial.print(sensorIndex);
     Serial.print(F(" address="));
     reportAddress(address);
@@ -174,34 +128,47 @@ void Firmware::reportFanInfo(uint8_t fanIndex, const FanInfo &info, bool reportO
 
 void Firmware::reportFansInfo()
 {
-#if defined(FAN0)
-    reportFanInfo(FAN0_INDEX, controller.getFanInfo(FAN0_INDEX), false);
-#endif
-#if defined(FAN1)
-    reportFanInfo(FAN1_INDEX, controller.getFanInfo(FAN1_INDEX), false);
-#endif
-#if defined(FAN2)
-    reportFanInfo(FAN2_INDEX, controller.getFanInfo(FAN2_INDEX), false);
-#endif
-#if defined(FAN3)
-    reportFanInfo(FAN3_INDEX, controller.getFanInfo(FAN3_INDEX), false);
-#endif
-#if defined(FAN4)
-    reportFanInfo(FAN4_INDEX, controller.getFanInfo(FAN4_INDEX), false);
-#endif
+    for(auto fanIndex : definedFanIndices)
+        reportFanInfo(fanIndex, controller.getFanInfo(fanIndex), false);
 }
 
 void Firmware::setup()
 {
-
     Serial.begin(SERIAL_BAUD, SERIAL_CONFIG);
+    { // firmware info
+        Serial.print(millis());
+        Serial.print(F(" # PWM controller version "));
+        Serial.print(VERSION_MAJOR);
+        Serial.print('.');
+        Serial.print(VERSION_MINOR);
+        Serial.print('.');
+        Serial.print(VERSION_PATCH);
+        Serial.print(F(" built "));
+        Serial.print(__DATE__);
+        Serial.print(F(" "));
+        Serial.print(__TIME__);
+        Serial.println();
+
+        Serial.print(millis());
+        Serial.print(F(" # fans="));
+        Serial.print(getDefinedFansCount());
+        Serial.print(F(" sensors="));
+        Serial.println(getDefinedTempSensorsCount());
+
+        Serial.print(millis());
+        Serial.println(F(" # Notes:"));
+        Serial.print(millis());
+        Serial.println(F(" #   - lines with leading '#' are human readable logs"));
+        Serial.print(millis());
+        Serial.println(F(" #   - lines without leading '#' are slightly machine parseable"));
+    }
 
     { // display
         Wire.begin(SCREEN_WIRE_SDA, SCREEN_WIRE_SCL);
         if(!display.screen.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS, false, false))
         {
             Serial.print(millis());
-            Serial.println(F(" SSD1306 allocation failed"));
+            Serial.println(F(" # SSD1306 allocation failed"));
         }
         display.screen.setRotation(2);
         display.screen.setTextSize(1, 1);
@@ -209,32 +176,37 @@ void Firmware::setup()
     }
 
     { // PWM
-        Serial.print(millis());
-        if(fan.pwms.begin()) Serial.println(F(" init PWMs: OK"));
-        else Serial.println(F(" init PWMs: ERROR"));
+        if(!fan.pwms.begin())
+        {
+            Serial.print(millis());
+            Serial.println(F(" # init PWMs: ERROR"));
+        }
     }
 
     { // tacho input
-        Serial.print(millis());
-        if(fan.tachos.begin()) Serial.println(F(" init tachos: OK"));
-        else Serial.println(F(" init tachos: ERROR"));
+
+        if(!fan.tachos.begin())
+        {
+            Serial.print(millis());
+            Serial.println(F(" # init tachos: ERROR"));
+        }
     }
 
     { // temperature sensors
         Serial.print(millis());
-        Serial.println(F(" init temperature sensors ... "));
+        Serial.println(F(" # init temperature sensors ... "));
 
         temp.dsSensors.begin();
         temp.sensors.begin();
 
         Serial.print(millis());
-        Serial.print(F(" reported sensor bus power is "));
+        Serial.print(F(" # reported sensor bus power is "));
         if(temp.dsSensors.isParasitePowerMode()) Serial.println("parasitic");
         else Serial.println(F("VCC"));
         Serial.print(millis());
-        Serial.print(F(" discovered "));
+        Serial.print(F(" # discovered "));
         Serial.print(temp.dsSensors.getDeviceCount());
-        Serial.println(F(" temperature sensors (index depends on bus order):"));
+        Serial.println(F(" # temperature sensors (index depends on bus order):"));
         for(uint8_t idx = temp.dsSensors.getDeviceCount(); idx > 0; idx--)
         {
             DeviceAddress address;
@@ -243,20 +215,20 @@ void Firmware::setup()
         }
 
         Serial.print(millis());
-        Serial.println(F(" check configured addresses (index depends on configuration order):"));
+        Serial.println(F(" # check configured addresses (index depends on configuration order):"));
         DeviceAddress configuredAddresses[] TEMP_SENSORS_ADDRESS;
         for(uint8_t idx = sizeof(configuredAddresses) / sizeof(DeviceAddress); idx > 0; idx--)
             reportTemperatureSensor(idx - 1, configuredAddresses[idx - 1]);
     }
 
     { // explain trend symbols
-        FanPwmSpecs pwmS{};
-        FanTachoSpecs rpmS{};
-        TempSensorSpecs tempS{};
+        FanPwmSpec pwmS{};
+        FanTachoSpec rpmS{};
+        TempSensorSpec tempS{};
         FanInfo i{ .pwmSpecs = &pwmS, .rpmSpecs = &rpmS, .tempSpecs = &tempS };
 
         Serial.print(millis());
-        Serial.print(F(" severe input error flags: '"));
+        Serial.print(F(" # severe input error flags: '"));
         rpmS.hasError = true;
         Serial.print(getTrendSymbol(i));
         Serial.print(F("'=tachoError '"));
@@ -265,7 +237,7 @@ void Firmware::setup()
         Serial.print(getTrendSymbol(i));
         Serial.println(F("'=tempError"));
         Serial.print(millis());
-        Serial.print(F(" alert flags if parameter(s) not in range: '"));
+        Serial.print(F(" # alert flags if parameter(s) not in range: '"));
         tempS = {};
         pwmS.currentDuty = 0;
         pwmS.alertBelowDuty = 1;
@@ -284,7 +256,7 @@ void Firmware::setup()
     }
 
     Serial.print(millis());
-    Serial.println(" Enter command 'h' for help.");
+    Serial.println(F(" # Enter command 'h' for help."));
 }
 
 

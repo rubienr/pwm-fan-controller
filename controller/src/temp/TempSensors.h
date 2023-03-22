@@ -3,7 +3,7 @@
 #include <DallasTemperature.h>
 #include <cinttypes>
 
-struct TempSensorSpecs
+struct TempSensorSpec
 {
     [[nodiscard]] bool hasAlert() const; // true if temperature is not within alertBelowTempC and alertAboveTempC
     bool hasError{ false };              // true if temp sensor readout was erroneous
@@ -20,10 +20,10 @@ struct TempSensors
     void begin();
     void requestTemperatureConversion() const;
     bool fetchTemperatureCelsius(uint8_t idx);
-    [[nodiscard]] const TempSensorSpecs &getSpecs(uint8_t tempSensorIndex) const;
-    [[nodiscard]] TempSensorSpecs &getSpecs(uint8_t tempSensorIndex);
+    [[nodiscard]] const TempSensorSpec &getSpecs(uint8_t tempSensorIndex) const;
+    [[nodiscard]] TempSensorSpec &getSpecs(uint8_t tempSensorIndex);
 
 protected:
     DallasTemperature &sensorBus;
-    TempSensorSpecs sensors[5]{};
+    TempSensorSpec sensors[getDefinedTempSensorsCount()]{};
 };

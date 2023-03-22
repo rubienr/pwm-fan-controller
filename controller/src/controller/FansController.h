@@ -3,17 +3,17 @@
 #include "configuration.h"
 
 struct TempSensors;
-struct TempSensorSpecs;
+struct TempSensorSpec;
 struct FansPwm;
-struct FanPwmSpecs;
+struct FanPwmSpec;
 struct FansTacho;
-struct FanTachoSpecs;
+struct FanTachoSpec;
 
 struct FanInfo
 {
-    FanPwmSpecs *pwmSpecs{ nullptr };           // PWM related specs/values
-    FanTachoSpecs *rpmSpecs{ nullptr };         // tacho related specs/counter
-    TempSensorSpecs *tempSpecs{ nullptr };      // temperature related specs/values
+    FanPwmSpec *pwmSpecs{ nullptr };            // PWM related specs/values
+    FanTachoSpec *rpmSpecs{ nullptr };          // tacho related specs/counter
+    TempSensorSpec *tempSpecs{ nullptr };       // temperature related specs/values
     float interpolatedPowerPercent{ 0.0f };     // power in %
     int8_t trend{ 0 };                          // -1, 0, 1 : slower, steady, faster
     FanSpeedInterpolator4Points interpolator{}; // interpolates according to configured power curve

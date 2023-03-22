@@ -14,6 +14,7 @@ template <uint8_t NumPoints = 4> struct FanSpeedInterpolator
     using FanCurveType = CurvePoint[NumPoints];
     static_assert(NumPoints > 1);
 
+    
     bool setPowerCurvePoints(const uint8_t (&power)[NumPoints], const int16_t (&tempCentiCelsius)[NumPoints])
     {
         // assert: tempCentiCelsius[N] < tempCentiCelsius[N+1]
@@ -28,21 +29,24 @@ template <uint8_t NumPoints = 4> struct FanSpeedInterpolator
         return true;
     }
 
+
     void interpolatePowerFromTemperature(const float &temperatureCelsius)
     {
         auto reportedTemperature = static_cast<int16_t>(lroundf(temperatureCelsius * 10));
 
-
         if(reportedTemperature <= fanCurve[0].tempCentiCelsius) // min power
             interpolatedPower = fanCurve[0].power;
-        else if(reportedTemperature <= fanCurve[1].tempCentiCelsius)
-            interpolatedPower = interpolateFromSegment(0, 1, reportedTemperature);
-        else if(reportedTemperature <= fanCurve[2].tempCentiCelsius)
-            interpolatedPower = interpolateFromSegment(1, 2, reportedTemperature);
-        else if(reportedTemperature <= fanCurve[3].tempCentiCelsius)
-            interpolatedPower = interpolateFromSegment(2, 3, reportedTemperature);
-        else // if (reportedTemperature > fanCurve[3].tempCentiCelsius) // max power
-            interpolatedPower = fanCurve[3].power;
+        else if(reportedTemperature > fanCurve[NumPoints - 1].tempCentiCelsius) // max power
+            interpolatedPower = fanCurve[NumPoints - 1].power;
+        else
+        {
+            for(uint8_t index = 1; index < NumPoints - 1; index++)
+                if(reportedTemperature <= fanCurve[index].tempCentiCelsius)
+                {
+                    interpolatedPower = interpolateFromSegment(index - 1, index, reportedTemperature);
+                    return;
+                }
+        }
     }
 
 

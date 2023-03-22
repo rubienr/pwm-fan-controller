@@ -44,6 +44,7 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
         commandList.push_back({ .name='S', .callback = &ClassType::commandSaveSettings,           .help = "save  settings:                    S" });
         commandList.push_back({ .name='s', .callback = &ClassType::commandLoadSettings,           .help = "load  settings:                    s" });
         commandList.push_back({ .name='x', .callback = &ClassType::commandResetSettings,          .help = "reset settings:                    x" });
+        commandList.push_back({ .name='X', .callback = &ClassType::commandReboot,                 .help = "reboot device:                     X" });
         // clang-format on
 
         for(const auto &item : commandList)
@@ -124,42 +125,13 @@ protected:
         // examples: "f", "f 0", "f 4"
         char c;
         uint8_t fanIndex;
-
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return printFan(fanIndex);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return printFan(fanIndex);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return printFan(fanIndex);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return printFan(fanIndex);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return printFan(fanIndex);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return printFan(fanIndex);
             return false;
         }
-
-#if defined(FAN0)
-        printFan(FAN0_INDEX);
-#endif
-#if defined(FAN1)
-        printFan(FAN1_INDEX);
-#endif
-#if defined(FAN2)
-        printFan(FAN2_INDEX);
-#endif
-#if defined(FAN3)
-        printFan(FAN3_INDEX);
-#endif
-#if defined(FAN4)
-        printFan(FAN4_INDEX);
-#endif
+        for(auto idx : definedFanIndices)
+            printFan(idx);
         return true;
     }
 
@@ -219,27 +191,12 @@ protected:
         uint8_t fanIndex;
         int16_t temp[4];
         uint8_t power[4];
-        if((2 + 2 * 4) <= sscanf(line, "%c %hhu %hu %hhu %hu %hhu %hu %hhu %hu %hhu", &c, &fanIndex, &temp[0], &power[0],
+        if((2 + 2 * 4) <= sscanf(line, "%c %hhu %hd %hhu %hd %hhu %hd %hhu %hd %hhu", &c, &fanIndex, &temp[0], &power[0],
                                  &temp[1], &power[1], &temp[2], &power[2], &temp[3], &power[3]))
         {
-            if(fanIndex == FAN0_INDEX) return controller.getFanInfo(fanIndex).interpolator.setPowerCurvePoints(power, temp);
-
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return controller.getFanInfo(fanIndex).interpolator.setPowerCurvePoints(power, temp);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return controller.getFanInfo(fanIndex).interpolator.setPowerCurvePoints(power, temp);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return controller.getFanInfo(fanIndex).interpolator.setPowerCurvePoints(power, temp);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return controller.getFanInfo(fanIndex).interpolator.setPowerCurvePoints(power, temp);
-#endif
-
-            return false;
+            if(isAnyFanWithIndexDefined(fanIndex))
+                return controller.getFanInfo(fanIndex).interpolator.setPowerCurvePoints(power, temp);
         }
-
         return false;
     }
 
@@ -281,46 +238,18 @@ protected:
         uint8_t fanIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return printFanCurve(fanIndex);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return printFanCurve(fanIndex);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return printFanCurve(fanIndex);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return printFanCurve(fanIndex);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return printFanCurve(fanIndex);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return printFanCurve(fanIndex);
             return false;
         }
-
-#if defined(FAN0)
-        printFanCurve(FAN0_INDEX);
-#endif
-#if defined(FAN1)
-        printFanCurve(FAN1_INDEX);
-#endif
-#if defined(FAN2)
-        printFanCurve(FAN2_INDEX);
-#endif
-#if defined(FAN3)
-        printFanCurve(FAN3_INDEX);
-#endif
-#if defined(FAN4)
-        printFanCurve(FAN4_INDEX);
-#endif
+        for(auto idx : definedFanIndices)
+            printFanCurve(idx);
         return true;
     }
 
 
     bool setPwmAlert(uint8_t fanIndex, uint8_t pwmMin, uint8_t pwmMax)
     {
-        FanPwmSpecs &pwmInfo{ *controller.getFanInfo(fanIndex).pwmSpecs };
+        FanPwmSpec &pwmInfo{ *controller.getFanInfo(fanIndex).pwmSpecs };
         pwmInfo.alertBelowDuty = pwmMin;
         pwmInfo.alertAboveDuty = pwmMax;
         return true;
@@ -329,7 +258,7 @@ protected:
 
     bool setRpmAlert(uint8_t fanIndex, uint8_t rpmMin, uint8_t rpmMax)
     {
-        FanTachoSpecs &rpmInfo{ *controller.getFanInfo(fanIndex).rpmSpecs };
+        FanTachoSpec &rpmInfo{ *controller.getFanInfo(fanIndex).rpmSpecs };
         rpmInfo.alertBelowRpm = rpmMin;
         rpmInfo.alertAboveRpm = rpmMax;
         return true;
@@ -338,7 +267,7 @@ protected:
 
     bool setTempAlert(uint8_t fanIndex, const float &rpmMin, const float &rpmMax)
     {
-        TempSensorSpecs &tempInfo{ *controller.getFanInfo(fanIndex).tempSpecs };
+        TempSensorSpec &tempInfo{ *controller.getFanInfo(fanIndex).tempSpecs };
         tempInfo.alertBelowTempC = rpmMin;
         tempInfo.alertAboveTempC = rpmMax;
         return true;
@@ -353,21 +282,7 @@ protected:
         uint8_t pwmMin, pwmMax;
         if(4 <= sscanf(line, "%c %hhu %hhu %hhu", &c, &fanIndex, &pwmMin, &pwmMax))
         {
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return setPwmAlert(fanIndex, pwmMin, pwmMax);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return setPwmAlert(fanIndex, pwmMin, pwmMax);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return setPwmAlert(fanIndex, pwmMin, pwmMax);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return setPwmAlert(fanIndex, pwmMin, pwmMax);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return setPwmAlert(fanIndex, pwmMin, pwmMax);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return setPwmAlert(fanIndex, pwmMin, pwmMax);
         }
         return false;
     }
@@ -416,39 +331,12 @@ protected:
         uint8_t fanIndex;
         if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return printPwmAlert(fanIndex);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return printPwmAlert(fanIndex);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return printPwmAlert(fanIndex);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return printPwmAlert(fanIndex);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return printPwmAlert(fanIndex);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return printPwmAlert(fanIndex);
             return false;
         }
 
-#if defined(FAN0)
-        printPwmAlert(FAN0_INDEX);
-#endif
-#if defined(FAN1)
-        printPwmAlert(FAN1_INDEX);
-#endif
-#if defined(FAN2)
-        printPwmAlert(FAN2_INDEX);
-#endif
-#if defined(FAN3)
-        printPwmAlert(FAN3_INDEX);
-#endif
-#if defined(FAN4)
-        printPwmAlert(FAN4_INDEX);
-#endif
+        for(auto idx : definedFanIndices)
+            printPwmAlert(idx);
         return true;
     }
 
@@ -461,24 +349,7 @@ protected:
         uint8_t rpmMin, rpmMax;
         if(4 <= sscanf(line, "%c %hhu %hhu %hhu", &c, &fanIndex, &rpmMin, &rpmMax))
         {
-
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return setRpmAlert(fanIndex, rpmMin, rpmMax);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return setRpmAlert(fanIndex, rpmMin, rpmMax);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return setRpmAlert(fanIndex, rpmMin, rpmMax);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return setRpmAlert(fanIndex, rpmMin, rpmMax);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return setRpmAlert(fanIndex, rpmMin, rpmMax);
-
-
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return setRpmAlert(fanIndex, rpmMin, rpmMax);
         }
         return false;
     }
@@ -491,42 +362,15 @@ protected:
         uint8_t fanIndex;
         if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return printRpmAlert(fanIndex);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return printRpmAlert(fanIndex);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return printRpmAlert(fanIndex);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return printRpmAlert(fanIndex);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return printRpmAlert(fanIndex);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return printRpmAlert(fanIndex);
             return false;
         }
 
-#if defined(FAN0)
-        printRpmAlert(FAN0_INDEX);
-#endif
-#if defined(FAN1)
-        printRpmAlert(FAN1_INDEX);
-#endif
-#if defined(FAN2)
-        printRpmAlert(FAN2_INDEX);
-#endif
-#if defined(FAN3)
-        printRpmAlert(FAN3_INDEX);
-#endif
-#if defined(FAN4)
-        printRpmAlert(FAN4_INDEX);
-#endif
+        for(auto idx : definedFanIndices)
+            printRpmAlert(idx);
+
         return true;
     }
-
 
     bool commandSetTemperatureAlert(char (&line)[BufferSize])
     {
@@ -535,25 +379,10 @@ protected:
         uint8_t fanIndex;
         int16_t tempMinCentiC, tempMaxCentiC;
 
-        if(4 <= sscanf(line, "%c %hhu %hu %hu", &c, &fanIndex, &tempMinCentiC, &tempMaxCentiC))
+        if(4 <= sscanf(line, "%c %hhu %hd %hd", &c, &fanIndex, &tempMinCentiC, &tempMaxCentiC))
         {
             const float tempMin{ static_cast<float>(tempMinCentiC) * 10.0f }, tempMax{ static_cast<float>(tempMaxCentiC) * 10.0f };
-
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return setTempAlert(fanIndex, tempMin, tempMax);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return setTempAlert(fanIndex, tempMin, tempMax);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return setTempAlert(fanIndex, tempMin, tempMax);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return setTempAlert(fanIndex, tempMin, tempMax);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return setTempAlert(fanIndex, tempMin, tempMax);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return setTempAlert(fanIndex, tempMin, tempMax);
         }
         return false;
     }
@@ -566,39 +395,13 @@ protected:
         uint8_t fanIndex;
         if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return printTempAlert(fanIndex);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return printTempAlert(fanIndex);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return printTempAlert(fanIndex);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return printTempAlert(fanIndex);
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return printTempAlert(fanIndex);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return printTempAlert(fanIndex);
             return false;
         }
 
-#if defined(FAN0)
-        printTempAlert(FAN0_INDEX);
-#endif
-#if defined(FAN1)
-        printTempAlert(FAN1_INDEX);
-#endif
-#if defined(FAN2)
-        printTempAlert(FAN2_INDEX);
-#endif
-#if defined(FAN3)
-        printTempAlert(FAN3_INDEX);
-#endif
-#if defined(FAN4)
-        printTempAlert(FAN4_INDEX);
-#endif
+        for(auto idx : definedFanIndices)
+            printTempAlert(idx);
+
         return true;
     }
 
@@ -632,40 +435,12 @@ protected:
         uint8_t fanIndex;
         if(4 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-#if defined(FAN0)
-            if(fanIndex == FAN0_INDEX) return printTemperatureSensorIndex(fanIndex);
-#endif
-#if defined(FAN1)
-            if(fanIndex == FAN1_INDEX) return printTemperatureSensorIndex(fanIndex);
-#endif
-#if defined(FAN2)
-            if(fanIndex == FAN2_INDEX) return printTemperatureSensorIndex(fanIndex);
-#endif
-#if defined(FAN3)
-            if(fanIndex == FAN3_INDEX) return printTemperatureSensorIndex(fanIndex);
-
-#endif
-#if defined(FAN4)
-            if(fanIndex == FAN4_INDEX) return printTemperatureSensorIndex(fanIndex);
-#endif
+            if(isAnyFanWithIndexDefined(fanIndex)) return printTemperatureSensorIndex(fanIndex);
             return false;
         }
 
-#if defined(FAN0)
-        printTemperatureSensorIndex(FAN0_INDEX);
-#endif
-#if defined(FAN1)
-        printTemperatureSensorIndex(FAN1_INDEX);
-#endif
-#if defined(FAN2)
-        printTemperatureSensorIndex(FAN2_INDEX);
-#endif
-#if defined(FAN3)
-        printTemperatureSensorIndex(FAN3_INDEX);
-#endif
-#if defined(FAN4)
-        printTemperatureSensorIndex(FAN4_INDEX);
-#endif
+        for(auto idx : definedFanIndices)
+            printTemperatureSensorIndex(idx);
         return true;
     }
 
@@ -677,6 +452,12 @@ protected:
 
 
     bool commandResetSettings(char (&)[BufferSize]) { return settings.resetSettings(); }
+
+    bool commandReboot(char (&)[BufferSize])
+    {
+        ESP.restart();
+        return true;
+    }
 
 
     char (&buffer)[BufferSize];

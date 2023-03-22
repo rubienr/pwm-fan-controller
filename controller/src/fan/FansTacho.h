@@ -2,7 +2,7 @@
 #include <cinttypes>
 #include <driver/pcnt.h>
 
-struct FanTachoSpecs
+struct FanTachoSpec
 {
     [[nodiscard]] bool hasAlert() const; // true if RPM is not within alertBelowRpm and alertAboveRpm
     bool hasError{ false };              // true if tacho readout was erroneous
@@ -18,12 +18,12 @@ struct FansTacho
 {
     bool begin();
     bool processEvery1000Ms();
-    [[nodiscard]] const FanTachoSpecs &getSpecs(uint8_t fanIndex) const;
-    [[nodiscard]] FanTachoSpecs &getSpecs(uint8_t fanIndex);
+    [[nodiscard]] const FanTachoSpec &getSpecs(uint8_t fanIndex) const;
+    [[nodiscard]] FanTachoSpec &getSpecs(uint8_t fanIndex);
 
 protected:
     bool setupCounterUnit(uint8_t fanIndex);
     bool takeFromCounterUnit(uint8_t fanIndex);
 
-    FanTachoSpecs fans[5]{};
+    FanTachoSpec fans[5]{};
 };

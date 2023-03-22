@@ -2,7 +2,7 @@
 #include <cinttypes>
 
 
-struct FanPwmSpecs
+struct FanPwmSpec
 {
     [[nodiscard]] bool hasAlert() const; // true if PWM is not within alertBelowDuty and alertAboveDuty
 
@@ -26,12 +26,12 @@ struct FansPwm
     uint32_t setPwm(uint8_t fanIndex, uint32_t duty);
     uint32_t setDefaultPwm(uint8_t fanIndex);
     uint32_t setErrorPwm(uint8_t fanIndex);
-    [[nodiscard]] const FanPwmSpecs &getSpecs(uint8_t fanIndex) const;
-    [[nodiscard]] FanPwmSpecs &getSpecs(uint8_t fanIndex);
+    [[nodiscard]] const FanPwmSpec &getSpecs(uint8_t fanIndex) const;
+    [[nodiscard]] FanPwmSpec &getSpecs(uint8_t fanIndex);
 
 
 protected:
     bool configureFanPwm(uint8_t fanIndex);
 
-    FanPwmSpecs fans[5]{};
+    FanPwmSpec fans[5]{};
 };

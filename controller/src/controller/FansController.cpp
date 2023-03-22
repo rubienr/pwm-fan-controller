@@ -5,39 +5,23 @@
 #include <cmath>
 
 
+#define initFanInfo(n)                                                                                                 \
+    {                                                                                                                  \
+        fansInfo[FAN##n##_INDEX].interpolator.setPowerCurvePoints(FAN##n##_CURVE_POWER, FAN##n##_CURVE_CENTI_CELSIUS); \
+        fansInfo[FAN##n##_INDEX].pwmSpecs = &pwms.getSpecs(FAN##n##_INDEX);                                            \
+        fansInfo[FAN##n##_INDEX].rpmSpecs = &tachos.getSpecs(FAN##n##_INDEX);                                          \
+        fansInfo[FAN##n##_INDEX].tempSpecs = &sensors.getSpecs(FAN##n##_TEMP_SENSOR_INDEX);                            \
+    }
+
+
 FansController::FansController(TempSensors &sensors, FansPwm &pwms, FansTacho &tachos) :
 sensors(sensors), pwms(pwms), tachos(tachos)
 {
-#if defined(FAN0)
-    fansInfo[FAN0_INDEX].interpolator.setPowerCurvePoints(FAN0_CURVE_POWER, FAN0_CURVE_CENTI_CELSIUS);
-    fansInfo[FAN0_INDEX].pwmSpecs = &pwms.getSpecs(FAN0_INDEX);
-    fansInfo[FAN0_INDEX].rpmSpecs = &tachos.getSpecs(FAN0_INDEX);
-    fansInfo[FAN0_INDEX].tempSpecs = &sensors.getSpecs(FAN0_TEMP_SENSOR_INDEX);
-#endif
-#if defined(FAN1)
-    fansInfo[FAN1_INDEX].interpolator.setPowerCurvePoints(FAN1_CURVE_POWER, FAN1_CURVE_CENTI_CELSIUS);
-    fansInfo[FAN1_INDEX].pwmSpecs = &pwms.getSpecs(FAN1_INDEX);
-    fansInfo[FAN1_INDEX].rpmSpecs = &tachos.getSpecs(FAN1_INDEX);
-    fansInfo[FAN1_INDEX].tempSpecs = &sensors.getSpecs(FAN1_TEMP_SENSOR_INDEX);
-#endif
-#if defined(FAN2)
-    fansInfo[FAN2_INDEX].interpolator.setPowerCurvePoints(FAN2_CURVE_POWER, FAN2_CURVE_CENTI_CELSIUS);
-    fansInfo[FAN2_INDEX].pwmSpecs = &pwms.getSpecs(FAN2_INDEX);
-    fansInfo[FAN2_INDEX].rpmSpecs = &tachos.getSpecs(FAN2_INDEX);
-    fansInfo[FAN2_INDEX].tempSpecs = &sensors.getSpecs(FAN2_TEMP_SENSOR_INDEX);
-#endif
-#if defined(FAN3)
-    fansInfo[FAN3_INDEX].interpolator.setPowerCurvePoints(FAN3_CURVE_POWER, FAN3_CURVE_CENTI_CELSIUS);
-    fansInfo[FAN3_INDEX].pwmSpecs = &pwms.getSpecs(FAN3_INDEX);
-    fansInfo[FAN3_INDEX].rpmSpecs = &tachos.getSpecs(FAN3_INDEX);
-    fansInfo[FAN3_INDEX].tempSpecs = &sensors.getSpecs(FAN3_TEMP_SENSOR_INDEX);
-#endif
-#if defined(FAN4)
-    fansInfo[FAN4_INDEX].interpolator.setPowerCurvePoints(FAN4_CURVE_POWER, FAN4_CURVE_CENTI_CELSIUS);
-    fansInfo[FAN4_INDEX].pwmSpecs = &pwms.getSpecs(FAN4_INDEX);
-    fansInfo[FAN4_INDEX].rpmSpecs = &tachos.getSpecs(FAN4_INDEX);
-    fansInfo[FAN4_INDEX].tempSpecs = &sensors.getSpecs(FAN4_TEMP_SENSOR_INDEX);
-#endif
+    if(isFan0Defined) initFanInfo(0);
+    if(isFan1Defined) initFanInfo(1);
+    if(isFan2Defined) initFanInfo(2);
+    if(isFan3Defined) initFanInfo(3);
+    if(isFan4Defined) initFanInfo(4);
 }
 
 
@@ -91,41 +75,7 @@ FanInfo &FansController::getFanInfo(uint8_t fanIndex) { return fansInfo[fanIndex
 
 bool FansController::updateFanTempSensorIndex(uint8_t fanIndex, uint8_t tempSensorIndex)
 {
-    bool hasFan{ false };
-#if defined(FAN0)
-    hasFan = (FAN0_INDEX == fanIndex) || hasFan;
-#endif
-#if defined(FAN1)
-    hasFan = (FAN1_INDEX == fanIndex) || hasFan;
-#endif
-#if defined(FAN2)
-    hasFan = (FAN2_INDEX == fanIndex) || hasFan;
-#endif
-#if defined(FAN3)
-    hasFan = (FAN3_INDEX == fanIndex) || hasFan;
-#endif
-#if defined(FAN4)
-    hasFan = (FAN4_INDEX == fanIndex) || hasFan;
-#endif
-
-    bool hasSensor{ false };
-#if defined(FAN0)
-    hasSensor = (FAN0_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
-#endif
-#if defined(FAN1)
-    hasSensor = (FAN1_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
-#endif
-#if defined(FAN2)
-    hasSensor = (FAN2_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
-#endif
-#if defined(FAN3)
-    hasSensor = (FAN3_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
-#endif
-#if defined(FAN4)
-    hasSensor = (FAN4_TEMP_SENSOR_INDEX == tempSensorIndex) || hasSensor;
-#endif
-
-    if(hasFan && hasSensor)
+    if(isAnyFanWithIndexDefined(fanIndex) && tempSensorIndex < getDefinedTempSensorsCount())
     {
         fansInfo[fanIndex].tempSpecs = &sensors.getSpecs(tempSensorIndex);
         return true;
