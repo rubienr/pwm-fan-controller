@@ -1,10 +1,12 @@
 #pragma once
+#include "../lib/version/version.h"
 #include "configuration.h"
 #include "console/ConsoleInterpreter.hpp"
 #include "controller/FansController.h"
 #include "fan/FansPwm.h"
 #include "fan/FansTacho.h"
 #include "settings/FlashSettings.h"
+#include "settings/defaults.h"
 #include "temp/TempSensors.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
@@ -15,7 +17,11 @@
 
 struct Resources
 {
-    FlashSettings settings{};
+    struct
+    { // version and settings storage
+        const Version version{};
+        FlashSettings storage{ FLASH_SETTINGS_FILE_PATH_NAME, version, defaultSettings() };
+    } settings;
 
     struct
     {
@@ -57,7 +63,7 @@ struct Resources
         uint8_t index : 7; // 0 - 127
         bool lineAvailable{ false };
     } console;
-    ConsoleInterpreter<128> interpreter{ console.buffer, controller, temp.sensors, timers.autoreportSeconds, settings };
+    ConsoleInterpreter<128> interpreter{ console.buffer, controller, temp.sensors, timers.autoreportSeconds, settings.storage };
 
     Resources() { console.index = 0; }
 };

@@ -1,5 +1,5 @@
 #include "Firmware.h"
-
+#include "LittleFS.h"
 
 char Firmware::getTrendSymbol(const FanInfo &info)
 {
@@ -126,7 +126,7 @@ void Firmware::reportFanInfo(uint8_t fanIndex, const FanInfo &info, bool reportO
 }
 
 
-void Firmware::reportFansInfo()
+void Firmware::reportFansInfo() const
 {
     for(auto fanIndex : definedFanIndices)
         reportFanInfo(fanIndex, controller.getFanInfo(fanIndex), false);
@@ -138,15 +138,13 @@ void Firmware::setup()
     { // firmware info
         Serial.print(millis());
         Serial.print(F(" # PWM controller version "));
-        Serial.print(VERSION_MAJOR);
+        Serial.print(settings.version.versionNumber.major);
         Serial.print('.');
-        Serial.print(VERSION_MINOR);
+        Serial.print(settings.version.versionNumber.minor);
         Serial.print('.');
-        Serial.print(VERSION_PATCH);
+        Serial.print(settings.version.versionNumber.patch);
         Serial.print(F(" built "));
-        Serial.print(__DATE__);
-        Serial.print(F(" "));
-        Serial.print(__TIME__);
+        Serial.print(settings.version.buildTimestamp);
         Serial.println();
 
         Serial.print(millis());
@@ -161,6 +159,24 @@ void Firmware::setup()
         Serial.println(F(" #   - lines with leading '#' are human readable logs"));
         Serial.print(millis());
         Serial.println(F(" #   - lines without leading '#' are slightly machine parseable"));
+    }
+
+    { // filesystem and stored settings
+        if(LittleFS.begin(true))
+        {
+            Serial.print(millis());
+            Serial.print(F(" # LittleFS mounted: used="));
+            Serial.print(LittleFS.usedBytes());
+            Serial.print(F(", total="));
+            Serial.print(LittleFS.totalBytes());
+            Serial.println(F(" [Bytes]"));
+            settings.storage.loadSettings();
+        }
+        else
+        {
+            Serial.print(millis());
+            Serial.println(F(" # failed to mount LittleFS, use default settings"));
+        }
     }
 
     { // display

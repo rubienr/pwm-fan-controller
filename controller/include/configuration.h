@@ -3,23 +3,27 @@
 
 // ----- section: version
 
-#define VERSION_MAJOR    0
-#define VERSION_MINOR    0
-#define VERSION_PATCH    1
+#define VERSION_MAJOR                 0
+#define VERSION_MINOR                 0
+#define VERSION_PATCH                 2
 
 // ----- section serial
 
-#define SERIAL_BAUD      115200
-#define SERIAL_CONFIG    SERIAL_8N1
-#define SERIAL_ECHO_ON   // echoes received characters back to serial console, comment to disable
+#define SERIAL_BAUD                   115200
+#define SERIAL_CONFIG                 SERIAL_8N1
+#define SERIAL_ECHO_ON                // echoes received characters back to serial console, comment to disable
 
 // ----- section screen
 
-#define SCREEN_WIDTH_PX  128
-#define SCREEN_HEIGHT_PX 64
-#define SCREEN_ADDRESS   0x3C
-#define SCREEN_WIRE_SDA  5
-#define SCREEN_WIRE_SCL  4
+#define SCREEN_WIDTH_PX               128
+#define SCREEN_HEIGHT_PX              64
+#define SCREEN_ADDRESS                0x3C
+#define SCREEN_WIRE_SDA               5
+#define SCREEN_WIRE_SCL               4
+
+// ----- section flash settings
+
+#define FLASH_SETTINGS_FILE_PATH_NAME "/settings.cfg"
 
 // ----- section fan
 

@@ -13,5 +13,5 @@ protected:
     static void reportAddress(const DeviceAddress &deviceAddress);
     void reportTemperatureSensor(uint8_t sensorIndex, const DeviceAddress &address);
     static void reportFanInfo(uint8_t fanIndex, const FanInfo &info, bool reportOnError = true, bool includeTimeStamp = true);
-    void reportFansInfo();
+    void reportFansInfo() const;
 };

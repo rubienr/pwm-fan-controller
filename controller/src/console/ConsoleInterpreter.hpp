@@ -45,6 +45,7 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
         commandList.push_back({ .name='a', .callback = &ClassType::commandPrintTempSensorAddr, .help = "print temperature sensor(s) address: a [tempSensorIndex]?" });
         commandList.push_back({ .name='S', .callback = &ClassType::commandSaveSettings,        .help = "save  settings:                      S" });
         commandList.push_back({ .name='s', .callback = &ClassType::commandLoadSettings,        .help = "load  settings:                      s" });
+        commandList.push_back({ .name='d', .callback = &ClassType::commandPrintSettings,       .help = "print settings:                      d" });
         commandList.push_back({ .name='x', .callback = &ClassType::commandResetSettings,       .help = "reset settings:                      x" });
         commandList.push_back({ .name='X', .callback = &ClassType::commandReboot,              .help = "reboot device:                       X" });
         // clang-format on
@@ -508,13 +509,53 @@ protected:
     }
 
 
-    bool commandSaveSettings(char (&)[BufferSize]) { return settings.storeSettings(); }
+    bool commandSaveSettings(char (&)[BufferSize])
+    {
+        auto result{ settings.storeSettings() };
+        if(result == StoreStatus::Stored)
+        {
+            Serial.println(F("settings saved from RAM to flash"));
+            return true;
+        }
+        else
+        {
+            Serial.print(F("failed to save settings from RAM to flash: "));
+            Serial.println(storeStatusToStr(result));
+            return false;
+        }
+    }
 
 
-    bool commandLoadSettings(char (&)[BufferSize]) { return settings.loadSettings(); }
+    bool commandLoadSettings(char (&)[BufferSize])
+    {
+        auto result{ settings.loadSettings() };
+        if(result == LoadStatus::Loaded)
+        {
+            Serial.println(F("settings loaded from flash to RAM"));
+            return true;
+        }
+        else
+        {
+            Serial.print(F("failed to load settings from flash to RAM: "));
+            Serial.println(loadStatusToStr(result));
+            return false;
+        }
+    }
 
 
-    bool commandResetSettings(char (&)[BufferSize]) { return settings.resetSettings(); }
+    bool commandPrintSettings(char (&)[BufferSize])
+    {
+        settings.reportContainer();
+        return true;
+    }
+
+
+    bool commandResetSettings(char (&)[BufferSize])
+    {
+        settings.resetSettings();
+        Serial.println(F("effective settings in RAM restored to defaults"));
+        return true;
+    }
 
 
     bool commandReboot(char (&)[BufferSize])
