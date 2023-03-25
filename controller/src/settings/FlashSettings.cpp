@@ -45,13 +45,13 @@ StoreStatus FlashSettings::writeSettingsToFilesystem(Container &c)
         else
         {
             Serial.print(millis());
-            Serial.println(" # container stored container");
+            Serial.println(F(" # container stored container"));
             reportContainer();
             return StoreStatus::Stored;
         }
     }
     Serial.print(millis());
-    Serial.print(" # failed to load container: ");
+    Serial.print(F(" # failed to load container: "));
     storeStatusToStr(storeStatus);
 
     return storeStatus;
@@ -73,17 +73,17 @@ LoadStatus FlashSettings::loadSettings()
         {
             container = loadedContainer;
             Serial.print(millis());
-            Serial.println(" # container loaded");
+            Serial.println(F(" # container loaded"));
             reportContainer();
             return LoadStatus::Loaded;
         }
     }
     Serial.print(millis());
-    Serial.print(" # failed to load container: ");
+    Serial.print(F(" # failed to load container: "));
     Serial.println(loadStatusToStr(loadStatus));
 
     Serial.print(millis());
-    Serial.println(" # use default settings");
+    Serial.println(F(" # use default settings"));
 
     resetSettings();
     reportContainer();

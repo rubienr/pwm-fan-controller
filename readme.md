@@ -40,8 +40,8 @@ References
   - detailed by serial
 - configuration at runtime: 
   - serial console, see 'h' for help
- 
+  - power curve, alert thresholds, sensor address, logging
+
 ## Roadmap (not implemented yet)
 - store/load configuration to/from flash
-- modify sensor address at runtime
 - OTA firmware update
