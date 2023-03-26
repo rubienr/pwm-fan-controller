@@ -40,95 +40,121 @@ const char *storeStatusToStr(StoreStatus t)
 void reportFanSettings(const FanSettings &f)
 {
     Serial.print(millis());
-    Serial.print("          # defaultPwmDuty=");
+    Serial.print(F(" #            defaultPwmDuty="));
     Serial.println(f.defaultPwmDuty);
 
     Serial.print(millis());
-    Serial.print("          # errorPwmDuty=");
+    Serial.print(F(" #            errorPwmDuty="));
     Serial.println(f.errorPwmDuty);
 
     Serial.print(millis());
-    Serial.print("          # temperatureSensorIndex=");
+    Serial.print(F(" #            temperatureSensorIndex="));
     Serial.println(f.temperatureSensorIndex);
 
     Serial.print(millis());
-    Serial.print("          # fanCurvePower[numCurvePoints]=");
+    Serial.print(F(" #            fanCurvePower={"));
+    bool isFirst{ true };
     for(const auto &p : f.fanCurvePower)
+    {
+        if(!isFirst) Serial.print(F(", "));
+        isFirst = false;
         Serial.print(p);
-    Serial.println();
+    }
+    Serial.println(F("}"));
 
     Serial.print(millis());
-    Serial.print("          # fanCurveDeciCelsius[numCurvePoints]=");
+    Serial.print(F(" #            fanCurveDeciCelsius={"));
+    isFirst = true;
     for(const auto &c : f.fanCurveDeciCelsius)
+    {
+        if(!isFirst) Serial.print(F(", "));
+        isFirst = false;
         Serial.print(c);
-    Serial.println();
+    }
+    Serial.println(F("}"));
 
     Serial.print(millis());
-    Serial.print("          # alertBelowPwm=");
+    Serial.print(F(" #            alertBelowPwm="));
     Serial.println(f.alertBelowPwm);
 
     Serial.print(millis());
-    Serial.print("          # alertAbovePwm=");
+    Serial.print(F(" #            alertAbovePwm="));
     Serial.println(f.alertAbovePwm);
 
     Serial.print(millis());
-    Serial.print("          # alertBelowRpm=");
+    Serial.print(F(" #            alertBelowRpm="));
     Serial.println(f.alertBelowRpm);
 
     Serial.print(millis());
-    Serial.print("          # alertAboveRpm=");
+    Serial.print(F(" #            alertAboveRpm="));
     Serial.println(f.alertAboveRpm);
 
     Serial.print(millis());
-    Serial.print("          # alertBelowTempDeciC=");
+    Serial.print(F(" #            alertBelowTempDeciC="));
     Serial.println(f.alertBelowTempDeciC);
 
     Serial.print(millis());
-    Serial.print("          # alertAboveTempDeciC=");
+    Serial.print(F(" #            alertAboveTempDeciC="));
     Serial.println(f.alertAboveTempDeciC);
 }
 
 
 void reportTemperatureSensorSettings(const TemperatureSensorSettings &t)
 {
-    Serial.print(millis());
-    Serial.print("         # address:");
+    Serial.print(F("\""));
+    bool isFirst{ true };
     for(const auto &a : t.address)
     {
-        if(a < 10) Serial.print(0);
-        Serial.print(a);
-        Serial.print(" ");
+        if(!isFirst) Serial.print(F(" "));
+        isFirst = false;
+        if(a <= 0xf) Serial.print(0);
+        Serial.print(a, HEX);
     }
-    Serial.println();
+    Serial.print(F("\""));
 }
 
 
 void reportSettings(const Settings &s)
 {
     Serial.print(millis());
-    Serial.print(" #       serialAutoreportSeconds=");
+    Serial.print(F(" #       serialAutoreportSeconds="));
     Serial.println(s.serialAutoreportSeconds);
 
     Serial.print(millis());
-    Serial.println(" #       temperatureSensors:");
+    Serial.println(F(" #       temperatureSensors:"));
+    uint8_t addressIdx{ 0 };
     for(const auto &temperatureSensor : s.temperatureSensors)
+    {
+        Serial.print(millis());
+        Serial.print(F(" #         address["));
+        Serial.print(addressIdx++);
+        Serial.print(F("]="));
         reportTemperatureSensorSettings(temperatureSensor);
+        Serial.println();
+    }
 
     Serial.print(millis());
-    Serial.println(" #       fans:");
+    Serial.println(F(" #       fans:"));
+    uint8_t fanIdx{ 0 };
     for(const auto &fan : s.fans)
+    {
+        Serial.print(millis());
+        Serial.print(F(" #         fans["));
+        Serial.print(fanIdx++);
+        Serial.println(F("]:"));
         reportFanSettings(fan);
+    }
 }
 
 
 void reportData(const Data &d)
 {
     Serial.print(millis());
-    Serial.print(" #     configWrites=");
+    Serial.print(F(" #     configWrites="));
     Serial.println(d.configWrites);
     reportVersion(d.version);
     Serial.print(millis());
-    Serial.println(" #     Settings:");
+    Serial.println(F(" #     Settings:"));
     reportSettings(d.settings);
 }
 
@@ -136,12 +162,12 @@ void reportData(const Data &d)
 void reportContainer(const Container &c)
 {
     Serial.print(millis());
-    Serial.println(" # Container:");
+    Serial.println(F(" # Container:"));
     Serial.print(millis());
-    Serial.print(" #   crc=");
+    Serial.print(F(" #   crc="));
     Serial.println(c.crc);
     Serial.print(millis());
-    Serial.println(" #   Data:");
+    Serial.println(F(" #   Data:"));
     reportData(c.data);
 }
 
@@ -149,22 +175,22 @@ void reportContainer(const Container &c)
 void reportVersion(const Version &v)
 {
     Serial.print(millis());
-    Serial.println(" #     Version:");
+    Serial.println(F(" #     Version:"));
     Serial.print(millis());
-    Serial.println(" #       versionNumber");
+    Serial.println(F(" #       versionNumber"));
     Serial.print(millis());
-    Serial.print(" #         major=");
+    Serial.print(F(" #         major="));
     Serial.println(v.versionNumber.major);
     Serial.print(millis());
-    Serial.print(" #         minor=");
+    Serial.print(F(" #         minor="));
     Serial.println(v.versionNumber.minor);
     Serial.print(millis());
-    Serial.print(" #         patch=");
+    Serial.print(F(" #         patch="));
     Serial.println(v.versionNumber.patch);
     Serial.print(millis());
-    Serial.print(" #       buildTimestamp=\"");
+    Serial.print(F(" #       buildTimestamp=\""));
     Serial.print(v.buildTimestamp);
-    Serial.println("\"");
+    Serial.println(F("\""));
 }
 
 

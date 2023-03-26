@@ -25,25 +25,25 @@ void Firmware::displayFan(uint8_t fanIndex)
     if(info.fanTemperatureSpec->hasError || info.rpmSpec->hasError || info.pwmSpec->hasAlert() || info.rpmSpec->hasAlert())
         display.screen.setTextColor(BLACK, WHITE);
     display.screen.print(fanIndex);
-    display.screen.print(" ");
+    display.screen.print(F(" "));
     int16_t rpm{ info.rpmSpec->currentRpm };
-    if(rpm < 10) display.screen.print(" ");
-    if(rpm < 100) display.screen.print(" ");
-    if(rpm < 1000) display.screen.print(" ");
+    if(rpm < 10) display.screen.print(F(" "));
+    if(rpm < 100) display.screen.print(F(" "));
+    if(rpm < 1000) display.screen.print(F(" "));
     display.screen.print(rpm);
     float tempCelsius{ info.fanTemperatureSpec->currentTempC };
-    if(tempCelsius < 10 && tempCelsius >= 0) display.screen.print(" ");
-    if(tempCelsius < 100 && tempCelsius >= 0) display.screen.print(" ");
+    if(tempCelsius < 10 && tempCelsius >= 0) display.screen.print(F(" "));
+    if(tempCelsius < 100 && tempCelsius >= 0) display.screen.print(F(" "));
     display.screen.print(tempCelsius, 1);
-    display.screen.print(" ");
+    display.screen.print(F(" "));
     auto power{ info.interpolatedPowerPercent };
-    if(power < 10) display.screen.print(" ");
-    if(power < 100) display.screen.print(" ");
+    if(power < 10) display.screen.print(F(" "));
+    if(power < 100) display.screen.print(F(" "));
     display.screen.print(power, 1);
-    display.screen.print(" ");
+    display.screen.print(F(" "));
     uint32_t pwm{ info.pwmSpec->currentDuty };
-    if(pwm < 10) display.screen.print(" ");
-    if(pwm < 100) display.screen.print(" ");
+    if(pwm < 10) display.screen.print(F(" "));
+    if(pwm < 100) display.screen.print(F(" "));
     display.screen.print(pwm);
     display.screen.println();
     display.screen.setTextColor(WHITE, BLACK);
@@ -52,20 +52,20 @@ void Firmware::displayFan(uint8_t fanIndex)
 
 void Firmware::displayFansInfo()
 {
-    display.screen.println("#  r/m degC  Pow% PWM");
+    display.screen.println(F("#  r/m degC  Pow% PWM"));
 
     for(auto fanIndex : definedFanIndices)
         displayFan(fanIndex);
 
-    display.screen.print("Trend [");
+    display.screen.print(F("Trend ["));
     for(auto fanIndex : definedFanIndices)
     {
-        display.screen.print(" ");
+        display.screen.print(F(" "));
         const FanInfo &info{ controller.getFanInfo(fanIndex) };
         display.screen.print(getTrendSymbol(info));
         reportFanInfo(fanIndex, info);
     }
-    display.screen.println(" ]");
+    display.screen.println(F(" ]"));
 }
 
 
@@ -73,7 +73,7 @@ void Firmware::reportAddress(const DeviceAddress &deviceAddress)
 {
     for(unsigned char c : deviceAddress)
     {
-        if(c < 16) Serial.print("0");
+        if(c < 16) Serial.print(0);
         Serial.print(c, HEX);
     }
 }
@@ -102,33 +102,33 @@ void Firmware::reportFanInfo(uint8_t fanIndex, const FanInfo &info, bool reportO
        info.pwmSpec->hasAlert())
     {
         if(includeTimeStamp) Serial.print(millis());
-        Serial.print(" fan=");
+        Serial.print(F(" fan="));
         Serial.print(fanIndex);
-        Serial.print(" sensor=");
+        Serial.print(F(" sensor="));
         Serial.print(info.fanTemperatureSpec->temperatureSensorIndex);
-        Serial.print(" rpm=");
+        Serial.print(F(" rpm="));
         Serial.print(info.rpmSpec->currentRpm);
-        Serial.print(" power=");
+        Serial.print(F(" power="));
         Serial.print(info.interpolator.getInterpolatedPower());
-        Serial.print(" powerPercent=");
+        Serial.print(F(" powerPercent="));
         Serial.print(info.interpolatedPowerPercent, 1);
-        Serial.print(" powerPwm=");
+        Serial.print(F(" powerPwm="));
         Serial.print(info.pwmSpec->currentDuty);
-        Serial.print(" tempCelsius=");
+        Serial.print(F(" tempCelsius="));
         Serial.print(info.fanTemperatureSpec->currentTempC, 1);
-        Serial.print(" tachoError=");
+        Serial.print(F(" tachoError="));
         Serial.print(info.rpmSpec->hasError);
-        Serial.print(" fanTempError=");
+        Serial.print(F(" tempError="));
         Serial.print(info.fanTemperatureSpec->hasError);
-        Serial.print(" tempSensorError=");
+        Serial.print(F(" tempSensorError="));
         Serial.print(info.temperatureSensorSpec->hasError);
-        Serial.print(" pwmAlert=");
+        Serial.print(F(" pwmAlert="));
         Serial.print(info.pwmSpec->hasAlert());
-        Serial.print(" rpmAlert=");
+        Serial.print(F(" rpmAlert="));
         Serial.print(info.rpmSpec->hasAlert());
-        Serial.print(" tempAlert=");
+        Serial.print(F(" tempAlert="));
         Serial.print(info.fanTemperatureSpec->hasAlert());
-        Serial.print(" trend=");
+        Serial.print(F(" trend="));
         Serial.println(info.trend);
     }
 }
@@ -225,17 +225,17 @@ void Firmware::setup()
 
         Serial.print(millis());
         Serial.print(F(" # reported sensor bus power is "));
-        if(temp.dsSensors.isParasitePowerMode()) Serial.println("parasitic");
+        if(temp.dsSensors.isParasitePowerMode()) Serial.println(F("parasitic"));
         else Serial.println(F("VCC"));
         Serial.print(millis());
         Serial.print(F(" # discovered "));
         Serial.print(temp.dsSensors.getDeviceCount());
-        Serial.println(F(" # temperature sensors (index depends on bus order):"));
-        for(uint8_t idx = temp.dsSensors.getDeviceCount(); idx > 0; idx--)
+        Serial.println(F(" temperature sensors (index depends on bus order):"));
+        for(uint8_t idx{ 0 }; idx < temp.dsSensors.getDeviceCount(); idx++)
         {
             DeviceAddress address;
-            temp.dsSensors.getAddress(address, idx - 1);
-            reportTemperatureSensor(idx - 1, address);
+            temp.dsSensors.getAddress(address, idx);
+            reportTemperatureSensor(idx, address);
         }
 
         Serial.print(millis());
@@ -262,7 +262,7 @@ void Firmware::setup()
         rpmS = {};
         fanS.hasError = true;
         Serial.print(getTrendSymbol(i));
-        Serial.print(F("'=fanTempError"));
+        Serial.print(F("'=tempError '"));
 
         fanS = {};
         tempS.hasError = true;
@@ -320,9 +320,9 @@ void Firmware::process()
         }
 #endif
 
-        display.screen.print("sep=");
+        display.screen.print(F("sep="));
         display.screen.print(currentSeparationMs);
-        display.screen.print(" exc=");
+        display.screen.print(F(" exc="));
         display.screen.print(timers.oneSecondProcessTriggerCounterMs);
 
         display.processTickerIndex = (display.processTickerIndex + 1) % sizeof(display.processTicker);

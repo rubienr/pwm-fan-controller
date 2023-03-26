@@ -53,8 +53,12 @@ void FansController::process()
 void FansController::updateFanInfo(uint8_t fanIndex, uint8_t fanTempSensorIndex)
 {
     temperatureSensors.fetchTemperatureCelsius(fanTempSensorIndex);
-
     FanInfo &info{ fansInfo[fanIndex] };
+    {
+        const auto &temperatureSensorSpec{ temperatureSensors.getSpec(fanTempSensorIndex) };
+        info.fanTemperatureSpec->currentTempC = temperatureSensorSpec.currentTempC;
+    }
+
     if(info.rpmSpec->hasError or info.fanTemperatureSpec->hasError) { fansPwm.setErrorPwm(fanIndex); }
     else
     {
@@ -79,6 +83,7 @@ bool FansController::updateFanTemperatureSensorIndex(uint8_t fanIndex, uint8_t t
 {
     if(isFanDefined(fanIndex) && isTemperatureSensorDefined(tempSensorIndex))
     {
+        fansInfo[fanIndex].fanTemperatureSpec->temperatureSensorIndex = tempSensorIndex;
         fansInfo[fanIndex].temperatureSensorSpec = &temperatureSensors.getSpec(tempSensorIndex);
         return true;
     }

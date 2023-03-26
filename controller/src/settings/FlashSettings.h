@@ -4,10 +4,10 @@
 
 struct FlashSettings
 {
-    explicit FlashSettings(const char *filePathName, const Version &version, const Settings &defaults);
+    explicit FlashSettings(const char *filePathName, const Version &version);
     LoadStatus loadSettings();
     StoreStatus storeSettings();
-    void resetSettings();
+    void reset();
 
     [[nodiscard]] Settings &getSettings();
     void reportContainer() const;
@@ -19,6 +19,5 @@ protected:
 
     const char *filename;
     const Version &version;
-    const Settings &defaults;
     Container container;
 };

@@ -22,7 +22,7 @@ LoadStatus ConfigurationHook::restoreRamFromFlash()
 
 bool ConfigurationHook::resetRamSettings()
 {
-    settings.getSettings().reset();
+    settings.reset();
     restoreRamFromSettings();
     return true;
 }
@@ -34,6 +34,7 @@ void ConfigurationHook::reportSettings() const { settings.reportContainer(); }
 ConfigurationHook::ConfigurationHook(FansController &controller, FlashSettings &settings, unsigned long &autoreportDelayS) :
 controller(controller), settings(settings), autoreportDelayS(autoreportDelayS)
 {
+    resetRamSettings();
 }
 
 
@@ -59,9 +60,9 @@ bool ConfigurationHook::setPwmAlert(uint8_t fanIndex, const uint32_t &minPwm, co
 bool ConfigurationHook::setTemperatureAlert(uint8_t fanIndex, const int16_t &minTempDeciC, const int16_t &maxTempDeciC)
 {
     FanTemperatureSpec &fanTempSpec{ *controller.getFanInfo(fanIndex).fanTemperatureSpec };
-    const float tempMin{ static_cast<float>(minTempDeciC) * 10.0f }, tempMax{ static_cast<float>(maxTempDeciC) * 10.0f };
-    fanTempSpec.alertBelowTempC = tempMin;
-    fanTempSpec.alertAboveTempC = tempMax;
+    const float tempMinC{ static_cast<float>(minTempDeciC) * 0.1f }, tempMaxC{ static_cast<float>(maxTempDeciC) * 0.1f };
+    fanTempSpec.alertBelowTempC = tempMinC;
+    fanTempSpec.alertAboveTempC = tempMaxC;
     return true;
 }
 
@@ -110,8 +111,8 @@ void ConfigurationHook::restoreRamFromSettings()
         ram.rpmSpec->alertBelowRpm = storageSettings.alertBelowRpm;
         ram.rpmSpec->alertAboveRpm = storageSettings.alertAboveRpm;
 
-        ram.fanTemperatureSpec->alertBelowTempC = 10.0f * static_cast<float>(storageSettings.alertBelowTempDeciC);
-        ram.fanTemperatureSpec->alertAboveTempC = 10.0f * static_cast<float>(storageSettings.alertAboveTempDeciC);
+        ram.fanTemperatureSpec->alertBelowTempC = 0.1f * static_cast<float>(storageSettings.alertBelowTempDeciC);
+        ram.fanTemperatureSpec->alertAboveTempC = 0.1f * static_cast<float>(storageSettings.alertAboveTempDeciC);
 
         ram.interpolator.setPowerCurvePoints(storageSettings.fanCurvePower, storageSettings.fanCurveDeciCelsius);
     }

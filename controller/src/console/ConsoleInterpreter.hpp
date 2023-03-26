@@ -61,16 +61,16 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
         auto callbackIter{ commandMap.find(buffer[0]) };
         if(callbackIter == commandMap.end())
         {
-            Serial.print("unknown command: ");
+            Serial.print(F("unknown command: "));
             Serial.println(buffer);
         }
         else
         {
             if(!(this->*(callbackIter->second))(buffer))
             {
-                Serial.print("failed to execute command '");
+                Serial.print(F("failed to execute command '"));
                 Serial.print(static_cast<char>(callbackIter->first));
-                Serial.println("'");
+                Serial.println(F("'"));
             }
         }
     }
@@ -81,43 +81,45 @@ protected:
     {
         const FanInfo &info{ configurationHook.getFanInfo(fanIndex) };
 
-        Serial.print("fan=");
+        Serial.print(F("fan="));
         Serial.print(fanIndex);
-        Serial.print(" sensor=");
+        Serial.print(F(" sensor="));
         Serial.print(info.fanTemperatureSpec->temperatureSensorIndex);
-        Serial.print(" rpm=");
+        Serial.print(F(" rpm="));
         Serial.print(info.rpmSpec->currentRpm);
-        Serial.print(" power=");
+        Serial.print(F(" power="));
         Serial.print(info.interpolator.getInterpolatedPower());
-        Serial.print(" powerPercent=");
+        Serial.print(F(" powerPercent="));
         Serial.print(info.interpolatedPowerPercent, 1);
-        Serial.print(" powerPwm=");
+        Serial.print(F(" powerPwm="));
         Serial.print(info.pwmSpec->currentDuty);
-        Serial.print(" tempCelsius=");
+        Serial.print(F(" tempCelsius="));
         Serial.print(info.fanTemperatureSpec->currentTempC, 1);
-        Serial.print(" tachoError=");
+        Serial.print(F(" tachoError="));
         Serial.print(info.rpmSpec->hasError);
-        Serial.print(" tempError=");
+        Serial.print(F(" tempError="));
         Serial.print(info.fanTemperatureSpec->hasError);
-        Serial.print(" pwmAlert=");
+        Serial.print(F(" tempSensorError="));
+        Serial.print(info.temperatureSensorSpec->hasError);
+        Serial.print(F(" pwmAlert="));
         Serial.print(info.pwmSpec->hasAlert());
-        Serial.print(" rpmAlert=");
+        Serial.print(F(" rpmAlert="));
         Serial.print(info.rpmSpec->hasAlert());
-        Serial.print(" tempAlert=");
+        Serial.print(F(" tempAlert="));
         Serial.print(info.fanTemperatureSpec->hasAlert());
-        Serial.print(" trend=");
+        Serial.print(F(" trend="));
         Serial.print(info.trend);
-        Serial.print(" tempAlertBelow=");
+        Serial.print(F(" tempAlertBelow="));
         Serial.print(info.fanTemperatureSpec->alertBelowTempC, 1);
-        Serial.print(" tempAlertAbove=");
+        Serial.print(F(" tempAlertAbove="));
         Serial.print(info.fanTemperatureSpec->alertAboveTempC, 1);
-        Serial.print(" pwmAlertBelow=");
+        Serial.print(F(" pwmAlertBelow="));
         Serial.print(info.pwmSpec->alertBelowDuty);
-        Serial.print(" pwmAlertAbove=");
+        Serial.print(F(" pwmAlertAbove="));
         Serial.print(info.pwmSpec->alertAboveDuty);
-        Serial.print(" rpmAlertBelow=");
+        Serial.print(F(" rpmAlertBelow="));
         Serial.print(info.rpmSpec->alertBelowRpm);
-        Serial.print(" rpmAlertAbove=");
+        Serial.print(F(" rpmAlertAbove="));
         Serial.print(info.rpmSpec->alertAboveRpm);
         Serial.println();
         return true;
@@ -144,36 +146,36 @@ protected:
     {
         // examples: "h"
         Serial.print(millis());
-        Serial.println(" # Help:");
+        Serial.println(F(" # Help:"));
         for(const auto c : commandList)
         {
             Serial.print(millis());
-            Serial.print(" # ");
+            Serial.print(F(" # "));
             Serial.print(c.name);
-            Serial.print("  ");
+            Serial.print(F("  "));
             Serial.println(c.help.c_str());
         }
 
         Serial.print(millis());
-        Serial.println(" # Units:");
+        Serial.println(F(" # Units:"));
         Serial.print(millis());
-        Serial.println(" # fanIndex:        uint8");
+        Serial.println(F(" # fanIndex:        uint8"));
         Serial.print(millis());
-        Serial.println(" # tempSensorIndex: uint8");
+        Serial.println(F(" # tempSensorIndex: uint8"));
         Serial.print(millis());
-        Serial.println(" # reportSeconds:   uint16, 0=disable");
+        Serial.println(F(" # reportSeconds:   uint16, 0=disable"));
         Serial.print(millis());
-        Serial.println(" # power[N]:        uint8");
+        Serial.println(F(" # power[N]:        uint8"));
         Serial.print(millis());
-        Serial.println(" # pwm[Min|Max]:    uint8");
+        Serial.println(F(" # pwm[Min|Max]:    uint8"));
         Serial.print(millis());
-        Serial.println(" # rpm[Min|Max]:    uint16");
+        Serial.println(F(" # rpm[Min|Max]:    uint16"));
         Serial.print(millis());
-        Serial.println(" # temp[Min|Max]:   int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501");
+        Serial.println(F(" # temp[Min|Max]:   int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501"));
         Serial.print(millis());
-        Serial.println(" # temp[N]:         int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501, temp[N] < temp[N+1]");
+        Serial.println(F(" # temp[N]:         int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501, temp[N] < temp[N+1]"));
         Serial.print(millis());
-        Serial.println(" # [aa]:            1-byte HEX address, i.e. AA, Fe, be");
+        Serial.println(F(" # [aa]:            1-byte HEX address, i.e. AA, Fe, be"));
         return true;
     }
 
@@ -194,7 +196,7 @@ protected:
     bool commandPrintAutoreportSec(char (&)[BufferSize])
     {
         // examples: "l", "l "
-        Serial.print("A ");
+        Serial.print(F("L "));
         Serial.println(configurationHook.getAutoreportDelaySeconds());
         return true;
     }
@@ -222,26 +224,26 @@ protected:
     {
         const auto &curve{ configurationHook.getFanInfo(fanIndex).interpolator.getCurve() };
 
-        Serial.print("C ");
+        Serial.print(F("C "));
         Serial.print(fanIndex);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[0].tempDeciCelsius);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[0].power);
 
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[1].tempDeciCelsius);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[1].power);
 
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[2].tempDeciCelsius);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[2].power);
 
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[3].tempDeciCelsius);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(curve[3].power);
 
         Serial.println();
@@ -280,11 +282,11 @@ protected:
 
     bool printPwmAlert(uint8_t fanIndex)
     {
-        Serial.print("P ");
+        Serial.print(F("P "));
         Serial.print(fanIndex);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpec->alertBelowDuty);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpec->alertAboveDuty);
         Serial.println();
         return true;
@@ -292,11 +294,11 @@ protected:
 
     bool printRpmAlert(uint8_t fanIndex)
     {
-        Serial.print("R ");
+        Serial.print(F("R "));
         Serial.print(fanIndex);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpec->alertBelowRpm);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpec->alertAboveRpm);
         Serial.println();
         return true;
@@ -304,11 +306,11 @@ protected:
 
     bool printTempAlert(uint8_t fanIndex)
     {
-        Serial.print("R ");
+        Serial.print(F("T "));
         Serial.print(fanIndex);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(configurationHook.getFanInfo(fanIndex).fanTemperatureSpec->alertBelowTempC * 10, 0);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(configurationHook.getFanInfo(fanIndex).fanTemperatureSpec->alertAboveTempC * 10, 0);
         Serial.println();
         return true;
@@ -407,9 +409,9 @@ protected:
 
     bool printTempSensorIndex(uint8_t fanIndex)
     {
-        Serial.print("I ");
+        Serial.print(F("I "));
         Serial.print(fanIndex);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(configurationHook.getFanInfo(fanIndex).fanTemperatureSpec->temperatureSensorIndex);
         Serial.println();
         return true;
@@ -435,13 +437,13 @@ protected:
 
     bool printTempSensorAddress(uint8_t tempSensorIndex)
     {
-        Serial.print("A ");
+        Serial.print(F("A "));
         Serial.print(tempSensorIndex);
 
         for(unsigned char c : configurationHook.getFanInfo(tempSensorIndex).temperatureSensorSpec->sensorAddress)
         {
-            Serial.print(" ");
-            if(c < 16) Serial.print("0");
+            Serial.print(F(" "));
+            if(c < 16) Serial.print(0);
             Serial.print(c, HEX);
         }
 

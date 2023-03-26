@@ -2,10 +2,9 @@
 #include "../../lib/crc/crc.h"
 #include "LittleFS.h"
 
-FlashSettings::FlashSettings(const char *filePathName, const Version &version, const Settings &defaults) :
-filename(filePathName), version(version), defaults(defaults)
+FlashSettings::FlashSettings(const char *filePathName, const Version &version) : filename(filePathName), version(version)
 {
-    container.data.settings = defaults;
+    reset();
 }
 
 
@@ -85,7 +84,7 @@ LoadStatus FlashSettings::loadSettings()
     Serial.print(millis());
     Serial.println(F(" # use default settings"));
 
-    resetSettings();
+    reset();
     reportContainer();
 
     return loadStatus;
@@ -95,10 +94,10 @@ LoadStatus FlashSettings::loadSettings()
 StoreStatus FlashSettings::storeSettings() { return writeSettingsToFilesystem(container); }
 
 
-void FlashSettings::resetSettings()
+void FlashSettings::reset()
 {
-    container.data.settings = defaults;
     container.data.version = version;
+    container.data.settings.reset();
 }
 
 

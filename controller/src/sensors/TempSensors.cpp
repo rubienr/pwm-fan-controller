@@ -30,7 +30,8 @@ bool TempSensors::fetchTemperatureCelsius(uint8_t tempSensorIndex)
 
     TempSensorSpec &info{ sensors[tempSensorIndex] };
     info.currentTempC = sensorBus.getTempC(info.sensorAddress);
-    info.hasError = sensors[tempSensorIndex].currentTempC <= DEVICE_DISCONNECTED_C;
+    info.hasError = info.currentTempC <= DEVICE_DISCONNECTED_C;
+
     return info.hasError;
 }
 

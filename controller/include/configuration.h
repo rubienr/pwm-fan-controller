@@ -53,7 +53,7 @@
     #define FAN0_ALERT_BELOW_RPM               0  // trigger alert below RPM threshold
     #define FAN0_ALERT_ABOVE_RPM               1500 // trigger alert above RPM threshold
     #define FAN0_ALERT_BELOW_TEMP_DECI_CELSIUS 0    // trigger alert below temperature threshold
-    #define FAN0_ALERT_ABOVE_TEMP_DECI_CELSIUS 60   // trigger alert above temperature threshold
+    #define FAN0_ALERT_ABOVE_TEMP_DECI_CELSIUS 600  // trigger alert above temperature threshold
 
 #endif
 

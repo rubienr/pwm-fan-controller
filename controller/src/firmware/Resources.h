@@ -8,7 +8,6 @@
 #include "fan/FansTemperature.h"
 #include "sensors/TempSensors.h"
 #include "settings/FlashSettings.h"
-#include "settings/defaults.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <DallasTemperature.h>
@@ -23,7 +22,7 @@ struct Resources
 
     struct
     { // version and settings storage
-        FlashSettings storage{ FLASH_SETTINGS_FILE_PATH_NAME, version, defaultSettings() };
+        FlashSettings storage{ FLASH_SETTINGS_FILE_PATH_NAME, version };
     } settings;
 
     struct
