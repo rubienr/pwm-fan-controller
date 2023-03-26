@@ -58,6 +58,6 @@ uint32_t FansPwm::setDefaultPwm(uint8_t fanIndex) { return setPwm(fanIndex, fans
 uint32_t FansPwm::setErrorPwm(uint8_t fanIndex) { return setPwm(fanIndex, fans[fanIndex].errorDuty); }
 
 
-const FanPwmSpec &FansPwm::getSpecs(uint8_t fanIndex) const { return fans[fanIndex]; }
+const FanPwmSpec &FansPwm::getSpec(uint8_t fanIndex) const { return fans[fanIndex]; }
 
-FanPwmSpec &FansPwm::getSpecs(uint8_t fanIndex) { return fans[fanIndex]; }
+FanPwmSpec &FansPwm::getSpec(uint8_t fanIndex) { return fans[fanIndex]; }

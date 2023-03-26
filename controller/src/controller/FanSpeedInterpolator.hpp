@@ -18,10 +18,10 @@ template <uint8_t NumPoints> struct FanSpeedInterpolator
     bool setPowerCurvePoints(const uint8_t (&power)[NumPoints], const int16_t (&tempDeciCelsius)[NumPoints])
     {
         // assert: tempDeciCelsius[N] < tempDeciCelsius[N+1]
-        for(uint8_t idx = 1; idx < NumPoints; idx++)
+        for(uint8_t idx{ 1 }; idx < NumPoints; idx++)
             if(tempDeciCelsius[idx - 1] >= tempDeciCelsius[idx]) return false;
 
-        for(uint8_t idx = 0; idx < NumPoints; idx++)
+        for(uint8_t idx{ 0 }; idx < NumPoints; idx++)
         {
             fanCurve[idx].power = power[idx];
             fanCurve[idx].tempDeciCelsius = tempDeciCelsius[idx];
@@ -40,7 +40,7 @@ template <uint8_t NumPoints> struct FanSpeedInterpolator
             interpolatedPower = fanCurve[NumPoints - 1].power;
         else
         {
-            for(uint8_t index = 1; index < NumPoints - 1; index++)
+            for(uint8_t index{ 1 }; index < NumPoints - 1; index++)
                 if(reportedDeciCelsius <= fanCurve[index].tempDeciCelsius)
                 {
                     interpolatedPower = interpolateFromSegment(index - 1, index, reportedDeciCelsius);

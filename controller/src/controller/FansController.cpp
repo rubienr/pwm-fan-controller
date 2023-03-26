@@ -1,21 +1,23 @@
 #include "FansController.h"
 #include "fan/FansPwm.h"
 #include "fan/FansTacho.h"
-#include "temp/TempSensors.h"
+#include "fan/FansTemperature.h"
+#include "sensors/TempSensors.h"
 #include <cmath>
 
 
-#define initFanInfo(n)                                                                                        \
-    {                                                                                                         \
-        fansInfo[FAN##n].interpolator.setPowerCurvePoints(FAN##n##_CURVE_POWER, FAN##n##_CURVE_DECI_CELSIUS); \
-        fansInfo[FAN##n].pwmSpecs = &pwms.getSpecs(FAN##n);                                                   \
-        fansInfo[FAN##n].rpmSpecs = &tachos.getSpecs(FAN##n);                                                 \
-        fansInfo[FAN##n].tempSpecs = &sensors.getSpecs(FAN##n##_TEMP_SENSOR_INDEX);                           \
+#define initFanInfo(n)                                                                                                                     \
+    {                                                                                                                                      \
+        fansInfo[FAN##n].interpolator.setPowerCurvePoints(FAN##n##_CURVE_POWER, FAN##n##_CURVE_DECI_CELSIUS);                              \
+        fansInfo[FAN##n].pwmSpec = &fansPwm.getSpec(FAN##n);                                                                               \
+        fansInfo[FAN##n].rpmSpec = &fansTacho.getSpec(FAN##n);                                                                             \
+        fansInfo[FAN##n].fanTemperatureSpec = &fansTemperature.getSpec(FAN##n);                                                            \
+        fansInfo[FAN##n].temperatureSensorSpec = &temperatureSensors.getSpec(fansInfo[FAN##n].fanTemperatureSpec->temperatureSensorIndex); \
     }
 
 
-FansController::FansController(TempSensors &sensors, FansPwm &pwms, FansTacho &tachos) :
-sensors(sensors), pwms(pwms), tachos(tachos)
+FansController::FansController(TempSensors &temperatureSensors, FansTemperature &fansTemperature, FansPwm &fansPwm, FansTacho &fansTacho) :
+temperatureSensors(temperatureSensors), fansTemperature(fansTemperature), fansPwm(fansPwm), fansTacho(fansTacho)
 {
     if(isFan0Defined) initFanInfo(0);
     if(isFan1Defined) initFanInfo(1);
@@ -27,8 +29,8 @@ sensors(sensors), pwms(pwms), tachos(tachos)
 
 void FansController::process()
 {
-    sensors.requestTemperatureConversion();
-    tachos.processEvery1000Ms();
+    temperatureSensors.requestTemperatureConversion();
+    fansTacho.processEvery1000Ms();
 
 #if defined(FAN0)
     updateFanInfo(FAN0, FAN0_TEMP_SENSOR_INDEX);
@@ -50,21 +52,21 @@ void FansController::process()
 
 void FansController::updateFanInfo(uint8_t fanIndex, uint8_t fanTempSensorIndex)
 {
-    sensors.fetchTemperatureCelsius(fanTempSensorIndex);
+    temperatureSensors.fetchTemperatureCelsius(fanTempSensorIndex);
 
     FanInfo &info{ fansInfo[fanIndex] };
-    if(info.rpmSpecs->hasError or info.tempSpecs->hasError) { pwms.setErrorPwm(fanIndex); }
+    if(info.rpmSpec->hasError or info.fanTemperatureSpec->hasError) { fansPwm.setErrorPwm(fanIndex); }
     else
     {
-        info.interpolator.interpolatePowerFromTemperature(info.tempSpecs->currentTempC);
+        info.interpolator.interpolatePowerFromTemperature(info.temperatureSensorSpec->currentTempC);
         float powerRatio{ (static_cast<float>(info.interpolator.getInterpolatedPower()) / 255.0f) };
         info.interpolatedPowerPercent = powerRatio * 100.0f;
-        auto newPowerPwm = static_cast<uint16_t>(roundf(powerRatio * static_cast<float>(info.pwmSpecs->maxDuty)));
+        auto newPowerPwm = static_cast<uint16_t>(roundf(powerRatio * static_cast<float>(info.pwmSpec->maxDuty)));
 
-        if(info.pwmSpecs->currentDuty == newPowerPwm) info.trend = 0;
-        else if(info.pwmSpecs->currentDuty > newPowerPwm) info.trend = -1;
+        if(info.pwmSpec->currentDuty == newPowerPwm) info.trend = 0;
+        else if(info.pwmSpec->currentDuty > newPowerPwm) info.trend = -1;
         else info.trend = 1;
-        pwms.setPwm(fanIndex, newPowerPwm);
+        fansPwm.setPwm(fanIndex, newPowerPwm);
     }
 }
 
@@ -77,7 +79,7 @@ bool FansController::updateFanTemperatureSensorIndex(uint8_t fanIndex, uint8_t t
 {
     if(isFanDefined(fanIndex) && isTemperatureSensorDefined(tempSensorIndex))
     {
-        fansInfo[fanIndex].tempSpecs = &sensors.getSpecs(tempSensorIndex);
+        fansInfo[fanIndex].temperatureSensorSpec = &temperatureSensors.getSpec(tempSensorIndex);
         return true;
     }
     return false;
@@ -86,5 +88,10 @@ bool FansController::updateFanTemperatureSensorIndex(uint8_t fanIndex, uint8_t t
 
 bool FansController::updateTemperatureSensorAddress(uint8_t tempSensorIndex, const uint8_t (&address)[8])
 {
-    return sensors.setDeviceAddress(tempSensorIndex, address);
+    return temperatureSensors.setDeviceAddress(tempSensorIndex, address);
+}
+
+bool FansController::getTemperatureSensorAddress(uint8_t tempSensorIndex, uint8_t (&address)[8])
+{
+    return temperatureSensors.getDeviceAddress(tempSensorIndex, address);
 }

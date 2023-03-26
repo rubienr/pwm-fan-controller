@@ -3,11 +3,16 @@
 
 char Firmware::getTrendSymbol(const FanInfo &info)
 {
-    if(info.tempSpecs->hasError) return 'T';
-    if(info.rpmSpecs->hasError) return 'S';
-    if(info.rpmSpecs->hasAlert()) return 'r';
-    if(info.pwmSpecs->hasAlert()) return 'p';
-    if(info.tempSpecs->hasAlert()) return 't';
+    if(info.temperatureSensorSpec->hasError) return 'S';
+
+    if(info.rpmSpec->hasError) return 'R';
+    if(info.rpmSpec->hasAlert()) return 'r';
+
+    if(info.pwmSpec->hasAlert()) return 'p';
+
+    if(info.fanTemperatureSpec->hasError) return 'T';
+    if(info.fanTemperatureSpec->hasAlert()) return 't';
+
     if(info.trend > 0) return '^';
     if(info.trend < 0) return 'v';
     return '-';
@@ -17,16 +22,16 @@ char Firmware::getTrendSymbol(const FanInfo &info)
 void Firmware::displayFan(uint8_t fanIndex)
 {
     const FanInfo &info{ controller.getFanInfo(fanIndex) };
-    if(info.tempSpecs->hasError || info.rpmSpecs->hasError || info.pwmSpecs->hasAlert() || info.rpmSpecs->hasAlert())
+    if(info.fanTemperatureSpec->hasError || info.rpmSpec->hasError || info.pwmSpec->hasAlert() || info.rpmSpec->hasAlert())
         display.screen.setTextColor(BLACK, WHITE);
     display.screen.print(fanIndex);
     display.screen.print(" ");
-    int16_t rpm{ info.rpmSpecs->currentRpm };
+    int16_t rpm{ info.rpmSpec->currentRpm };
     if(rpm < 10) display.screen.print(" ");
     if(rpm < 100) display.screen.print(" ");
     if(rpm < 1000) display.screen.print(" ");
     display.screen.print(rpm);
-    float tempCelsius{ info.tempSpecs->currentTempC };
+    float tempCelsius{ info.fanTemperatureSpec->currentTempC };
     if(tempCelsius < 10 && tempCelsius >= 0) display.screen.print(" ");
     if(tempCelsius < 100 && tempCelsius >= 0) display.screen.print(" ");
     display.screen.print(tempCelsius, 1);
@@ -36,7 +41,7 @@ void Firmware::displayFan(uint8_t fanIndex)
     if(power < 100) display.screen.print(" ");
     display.screen.print(power, 1);
     display.screen.print(" ");
-    uint32_t pwm{ info.pwmSpecs->currentDuty };
+    uint32_t pwm{ info.pwmSpec->currentDuty };
     if(pwm < 10) display.screen.print(" ");
     if(pwm < 100) display.screen.print(" ");
     display.screen.print(pwm);
@@ -93,33 +98,36 @@ void Firmware::reportTemperatureSensor(uint8_t sensorIndex, const DeviceAddress 
 
 void Firmware::reportFanInfo(uint8_t fanIndex, const FanInfo &info, bool reportOnError, bool includeTimeStamp)
 {
-    if(!reportOnError || info.tempSpecs->hasError || info.rpmSpecs->hasError || info.rpmSpecs->hasAlert() || info.pwmSpecs->hasAlert())
+    if(!reportOnError || info.temperatureSensorSpec->hasError || info.rpmSpec->hasError || info.rpmSpec->hasAlert() ||
+       info.pwmSpec->hasAlert())
     {
         if(includeTimeStamp) Serial.print(millis());
         Serial.print(" fan=");
         Serial.print(fanIndex);
         Serial.print(" sensor=");
-        Serial.print(info.tempSpecs->sensorIndex);
+        Serial.print(info.fanTemperatureSpec->temperatureSensorIndex);
         Serial.print(" rpm=");
-        Serial.print(info.rpmSpecs->currentRpm);
+        Serial.print(info.rpmSpec->currentRpm);
         Serial.print(" power=");
         Serial.print(info.interpolator.getInterpolatedPower());
         Serial.print(" powerPercent=");
         Serial.print(info.interpolatedPowerPercent, 1);
         Serial.print(" powerPwm=");
-        Serial.print(info.pwmSpecs->currentDuty);
+        Serial.print(info.pwmSpec->currentDuty);
         Serial.print(" tempCelsius=");
-        Serial.print(info.tempSpecs->currentTempC, 1);
+        Serial.print(info.fanTemperatureSpec->currentTempC, 1);
         Serial.print(" tachoError=");
-        Serial.print(info.rpmSpecs->hasError);
-        Serial.print(" tempError=");
-        Serial.print(info.tempSpecs->hasError);
+        Serial.print(info.rpmSpec->hasError);
+        Serial.print(" fanTempError=");
+        Serial.print(info.fanTemperatureSpec->hasError);
+        Serial.print(" tempSensorError=");
+        Serial.print(info.temperatureSensorSpec->hasError);
         Serial.print(" pwmAlert=");
-        Serial.print(info.pwmSpecs->hasAlert());
+        Serial.print(info.pwmSpec->hasAlert());
         Serial.print(" rpmAlert=");
-        Serial.print(info.rpmSpecs->hasAlert());
+        Serial.print(info.rpmSpec->hasAlert());
         Serial.print(" tempAlert=");
-        Serial.print(info.tempSpecs->hasAlert());
+        Serial.print(info.fanTemperatureSpec->hasAlert());
         Serial.print(" trend=");
         Serial.println(info.trend);
     }
@@ -240,35 +248,50 @@ void Firmware::setup()
     { // explain trend symbols
         FanPwmSpec pwmS{};
         FanTachoSpec rpmS{};
+        FanTemperatureSpec fanS{};
         TempSensorSpec tempS{};
-        FanInfo i{ .pwmSpecs = &pwmS, .rpmSpecs = &rpmS, .tempSpecs = &tempS };
+        FanInfo i{ .pwmSpec = &pwmS, .rpmSpec = &rpmS, .fanTemperatureSpec = &fanS, .temperatureSensorSpec = &tempS };
 
         Serial.print(millis());
         Serial.print(F(" # severe input error flags: '"));
+
         rpmS.hasError = true;
         Serial.print(getTrendSymbol(i));
         Serial.print(F("'=tachoError '"));
+
         rpmS = {};
+        fanS.hasError = true;
+        Serial.print(getTrendSymbol(i));
+        Serial.print(F("'=fanTempError"));
+
+        fanS = {};
         tempS.hasError = true;
         Serial.print(getTrendSymbol(i));
-        Serial.println(F("'=tempError"));
+        Serial.print(F("'=tempSensorError"));
+
+        Serial.println();
         Serial.print(millis());
         Serial.print(F(" # alert flags if parameter(s) not in range: '"));
+
         tempS = {};
         pwmS.currentDuty = 0;
         pwmS.alertBelowDuty = 1;
         Serial.print(getTrendSymbol(i));
         Serial.print(F("'=pwmAlert '"));
+
         pwmS = {};
         rpmS.currentRpm = 0;
         rpmS.alertBelowRpm = 1;
         Serial.print(getTrendSymbol(i));
         Serial.print(F("'=rpmAlert '"));
+
         rpmS = {};
-        tempS.currentTempC = 0;
-        tempS.alertBelowTempC = 1;
+        fanS.currentTempC = 0;
+        fanS.alertBelowTempC = 1;
         Serial.print(getTrendSymbol(i));
-        Serial.println(F("'=tempAlert"));
+        Serial.print(F("'=tempAlert"));
+
+        Serial.println();
     }
 
     Serial.print(millis());

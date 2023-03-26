@@ -51,7 +51,7 @@ bool FansTacho::processEvery1000Ms()
 {
     bool success{ true };
     for(auto fanIndex : definedFanIndices)
-        success = !takeFromCounterUnit(fanIndex) ? false : success;
+        success = takeFromCounterUnit(fanIndex) && success;
     return success;
 }
 
@@ -67,7 +67,7 @@ bool FansTacho::takeFromCounterUnit(uint8_t fanIndex)
 }
 
 
-const FanTachoSpec &FansTacho::getSpecs(uint8_t fanIndex) const { return fans[fanIndex]; }
+const FanTachoSpec &FansTacho::getSpec(uint8_t fanIndex) const { return fans[fanIndex]; }
 
 
-FanTachoSpec &FansTacho::getSpecs(uint8_t fanIndex) { return fans[fanIndex]; }
+FanTachoSpec &FansTacho::getSpec(uint8_t fanIndex) { return fans[fanIndex]; }

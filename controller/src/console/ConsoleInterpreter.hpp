@@ -1,10 +1,11 @@
 #pragma once
 
-#include "controller/FansController.h"
-#include "fan/FansPwm.h"
-#include "fan/FansTacho.h"
-#include "firmware/ConfigurationHook.h"
-#include "temp/TempSensors.h"
+#include "../controller/FansController.h"
+#include "../fan/FansPwm.h"
+#include "../fan/FansTacho.h"
+#include "../fan/FansTemperature.h"
+#include "../firmware/ConfigurationHook.h"
+#include "../sensors/TempSensors.h"
 #include <Arduino.h>
 #include <map>
 #include <string>
@@ -83,41 +84,41 @@ protected:
         Serial.print("fan=");
         Serial.print(fanIndex);
         Serial.print(" sensor=");
-        Serial.print(info.tempSpecs->sensorIndex);
+        Serial.print(info.fanTemperatureSpec->temperatureSensorIndex);
         Serial.print(" rpm=");
-        Serial.print(info.rpmSpecs->currentRpm);
+        Serial.print(info.rpmSpec->currentRpm);
         Serial.print(" power=");
         Serial.print(info.interpolator.getInterpolatedPower());
         Serial.print(" powerPercent=");
         Serial.print(info.interpolatedPowerPercent, 1);
         Serial.print(" powerPwm=");
-        Serial.print(info.pwmSpecs->currentDuty);
+        Serial.print(info.pwmSpec->currentDuty);
         Serial.print(" tempCelsius=");
-        Serial.print(info.tempSpecs->currentTempC, 1);
+        Serial.print(info.fanTemperatureSpec->currentTempC, 1);
         Serial.print(" tachoError=");
-        Serial.print(info.rpmSpecs->hasError);
+        Serial.print(info.rpmSpec->hasError);
         Serial.print(" tempError=");
-        Serial.print(info.tempSpecs->hasError);
+        Serial.print(info.fanTemperatureSpec->hasError);
         Serial.print(" pwmAlert=");
-        Serial.print(info.pwmSpecs->hasAlert());
+        Serial.print(info.pwmSpec->hasAlert());
         Serial.print(" rpmAlert=");
-        Serial.print(info.rpmSpecs->hasAlert());
+        Serial.print(info.rpmSpec->hasAlert());
         Serial.print(" tempAlert=");
-        Serial.print(info.tempSpecs->hasAlert());
+        Serial.print(info.fanTemperatureSpec->hasAlert());
         Serial.print(" trend=");
         Serial.print(info.trend);
         Serial.print(" tempAlertBelow=");
-        Serial.print(info.tempSpecs->alertBelowTempC, 1);
+        Serial.print(info.fanTemperatureSpec->alertBelowTempC, 1);
         Serial.print(" tempAlertAbove=");
-        Serial.print(info.tempSpecs->alertAboveTempC, 1);
+        Serial.print(info.fanTemperatureSpec->alertAboveTempC, 1);
         Serial.print(" pwmAlertBelow=");
-        Serial.print(info.pwmSpecs->alertBelowDuty);
+        Serial.print(info.pwmSpec->alertBelowDuty);
         Serial.print(" pwmAlertAbove=");
-        Serial.print(info.pwmSpecs->alertAboveDuty);
+        Serial.print(info.pwmSpec->alertAboveDuty);
         Serial.print(" rpmAlertBelow=");
-        Serial.print(info.rpmSpecs->alertBelowRpm);
+        Serial.print(info.rpmSpec->alertBelowRpm);
         Serial.print(" rpmAlertAbove=");
-        Serial.print(info.rpmSpecs->alertAboveRpm);
+        Serial.print(info.rpmSpec->alertAboveRpm);
         Serial.println();
         return true;
     }
@@ -282,9 +283,9 @@ protected:
         Serial.print("P ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpecs->alertBelowDuty);
+        Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpec->alertBelowDuty);
         Serial.print(" ");
-        Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpecs->alertAboveDuty);
+        Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpec->alertAboveDuty);
         Serial.println();
         return true;
     }
@@ -294,9 +295,9 @@ protected:
         Serial.print("R ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpecs->alertBelowRpm);
+        Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpec->alertBelowRpm);
         Serial.print(" ");
-        Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpecs->alertAboveRpm);
+        Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpec->alertAboveRpm);
         Serial.println();
         return true;
     }
@@ -306,9 +307,9 @@ protected:
         Serial.print("R ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(configurationHook.getFanInfo(fanIndex).tempSpecs->alertBelowTempC * 10, 0);
+        Serial.print(configurationHook.getFanInfo(fanIndex).fanTemperatureSpec->alertBelowTempC * 10, 0);
         Serial.print(" ");
-        Serial.print(configurationHook.getFanInfo(fanIndex).tempSpecs->alertAboveTempC * 10, 0);
+        Serial.print(configurationHook.getFanInfo(fanIndex).fanTemperatureSpec->alertAboveTempC * 10, 0);
         Serial.println();
         return true;
     }
@@ -409,7 +410,7 @@ protected:
         Serial.print("I ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(configurationHook.getFanInfo(fanIndex).tempSpecs->sensorIndex);
+        Serial.print(configurationHook.getFanInfo(fanIndex).fanTemperatureSpec->temperatureSensorIndex);
         Serial.println();
         return true;
     }
@@ -437,7 +438,7 @@ protected:
         Serial.print("A ");
         Serial.print(tempSensorIndex);
 
-        for(unsigned char c : configurationHook.getFanInfo(tempSensorIndex).tempSpecs->sensorAddress)
+        for(unsigned char c : configurationHook.getFanInfo(tempSensorIndex).temperatureSensorSpec->sensorAddress)
         {
             Serial.print(" ");
             if(c < 16) Serial.print("0");

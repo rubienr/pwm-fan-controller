@@ -41,11 +41,17 @@ struct FanSettings
 };
 
 
+void reportFanSettings(const FanSettings &f);
+
+
 struct TemperatureSensorSettings
 {
     void reset(uint8_t tempSensorIndex);
     uint8_t address[8]{ 0 };
 };
+
+
+void reportTemperatureSensorSettings(const TemperatureSensorSettings &t);
 
 
 template <uint8_t numFans, uint8_t numTemperatureSensors> struct SettingsMFansNSensors

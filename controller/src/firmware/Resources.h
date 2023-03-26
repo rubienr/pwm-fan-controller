@@ -5,9 +5,10 @@
 #include "controller/FansController.h"
 #include "fan/FansPwm.h"
 #include "fan/FansTacho.h"
+#include "fan/FansTemperature.h"
+#include "sensors/TempSensors.h"
 #include "settings/FlashSettings.h"
 #include "settings/defaults.h"
-#include "temp/TempSensors.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <DallasTemperature.h>
@@ -43,9 +44,10 @@ struct Resources
         OneWire wire{ TEMPERATURE_SENSORS_ONE_WIRE_GPIO_NUM };
         DallasTemperature dsSensors{ &wire };
         TempSensors sensors{ dsSensors };
+        FansTemperature fansTemperature{ sensors };
     } temp;
 
-    FansController controller{ temp.sensors, fan.pwms, fan.tachos };
+    FansController controller{ temp.sensors, temp.fansTemperature, fan.pwms, fan.tachos };
 
     struct
     {

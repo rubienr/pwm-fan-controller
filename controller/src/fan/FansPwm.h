@@ -26,8 +26,8 @@ struct FansPwm
     uint32_t setPwm(uint8_t fanIndex, uint32_t duty);
     uint32_t setDefaultPwm(uint8_t fanIndex);
     uint32_t setErrorPwm(uint8_t fanIndex);
-    [[nodiscard]] const FanPwmSpec &getSpecs(uint8_t fanIndex) const;
-    [[nodiscard]] FanPwmSpec &getSpecs(uint8_t fanIndex);
+    [[nodiscard]] const FanPwmSpec &getSpec(uint8_t fanIndex) const;
+    [[nodiscard]] FanPwmSpec &getSpec(uint8_t fanIndex);
 
 
 protected:

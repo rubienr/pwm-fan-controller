@@ -5,12 +5,8 @@
 
 struct TempSensorSpec
 {
-    [[nodiscard]] bool hasAlert() const; // true if temperature is not within alertBelowTempC and alertAboveTempC
-    bool hasError{ false };              // true if temp sensor readout was erroneous
-    float alertBelowTempC{ 0 };
-    float alertAboveTempC{ 0 };
+    bool hasError{ false }; // true if temp sensor readout was erroneous
     DeviceAddress sensorAddress{ 0 };
-    uint8_t sensorIndex{ 0 };
     float currentTempC{ 0 }; // last sensor conversion
 };
 
@@ -20,9 +16,10 @@ struct TempSensors
     void begin();
     void requestTemperatureConversion() const;
     bool fetchTemperatureCelsius(uint8_t idx);
-    [[nodiscard]] const TempSensorSpec &getSpecs(uint8_t tempSensorIndex) const;
-    [[nodiscard]] TempSensorSpec &getSpecs(uint8_t tempSensorIndex);
+    [[nodiscard]] const TempSensorSpec &getSpec(uint8_t tempSensorIndex) const;
+    [[nodiscard]] TempSensorSpec &getSpec(uint8_t tempSensorIndex);
     bool setDeviceAddress(uint8_t tempSensorIndex, const DeviceAddress &address);
+    bool getDeviceAddress(uint8_t tempSensorIndex, DeviceAddress &address);
 
 protected:
     DallasTemperature &sensorBus;

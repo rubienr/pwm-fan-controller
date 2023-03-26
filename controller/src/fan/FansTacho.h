@@ -18,8 +18,8 @@ struct FansTacho
 {
     bool begin();
     bool processEvery1000Ms();
-    [[nodiscard]] const FanTachoSpec &getSpecs(uint8_t fanIndex) const;
-    [[nodiscard]] FanTachoSpec &getSpecs(uint8_t fanIndex);
+    [[nodiscard]] const FanTachoSpec &getSpec(uint8_t fanIndex) const;
+    [[nodiscard]] FanTachoSpec &getSpec(uint8_t fanIndex);
 
 protected:
     bool setupCounterUnit(uint8_t fanIndex);

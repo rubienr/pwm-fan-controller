@@ -37,12 +37,87 @@ const char *storeStatusToStr(StoreStatus t)
 }
 
 
+void reportFanSettings(const FanSettings &f)
+{
+    Serial.print(millis());
+    Serial.print("          # defaultPwmDuty=");
+    Serial.println(f.defaultPwmDuty);
+
+    Serial.print(millis());
+    Serial.print("          # errorPwmDuty=");
+    Serial.println(f.errorPwmDuty);
+
+    Serial.print(millis());
+    Serial.print("          # temperatureSensorIndex=");
+    Serial.println(f.temperatureSensorIndex);
+
+    Serial.print(millis());
+    Serial.print("          # fanCurvePower[numCurvePoints]=");
+    for(const auto &p : f.fanCurvePower)
+        Serial.print(p);
+    Serial.println();
+
+    Serial.print(millis());
+    Serial.print("          # fanCurveDeciCelsius[numCurvePoints]=");
+    for(const auto &c : f.fanCurveDeciCelsius)
+        Serial.print(c);
+    Serial.println();
+
+    Serial.print(millis());
+    Serial.print("          # alertBelowPwm=");
+    Serial.println(f.alertBelowPwm);
+
+    Serial.print(millis());
+    Serial.print("          # alertAbovePwm=");
+    Serial.println(f.alertAbovePwm);
+
+    Serial.print(millis());
+    Serial.print("          # alertBelowRpm=");
+    Serial.println(f.alertBelowRpm);
+
+    Serial.print(millis());
+    Serial.print("          # alertAboveRpm=");
+    Serial.println(f.alertAboveRpm);
+
+    Serial.print(millis());
+    Serial.print("          # alertBelowTempDeciC=");
+    Serial.println(f.alertBelowTempDeciC);
+
+    Serial.print(millis());
+    Serial.print("          # alertAboveTempDeciC=");
+    Serial.println(f.alertAboveTempDeciC);
+}
+
+
+void reportTemperatureSensorSettings(const TemperatureSensorSettings &t)
+{
+    Serial.print(millis());
+    Serial.print("         # address:");
+    for(const auto &a : t.address)
+    {
+        if(a < 10) Serial.print(0);
+        Serial.print(a);
+        Serial.print(" ");
+    }
+    Serial.println();
+}
+
+
 void reportSettings(const Settings &s)
 {
     Serial.print(millis());
-    Serial.print(" #       foo=");
-    // TODO
-    // Serial.println(s.foo);
+    Serial.print(" #       serialAutoreportSeconds=");
+    Serial.println(s.serialAutoreportSeconds);
+
+    Serial.print(millis());
+    Serial.println(" #       temperatureSensors:");
+    for(const auto &temperatureSensor : s.temperatureSensors)
+        reportTemperatureSensorSettings(temperatureSensor);
+
+    Serial.print(millis());
+    Serial.println(" #       fans:");
+    for(const auto &fan : s.fans)
+        reportFanSettings(fan);
 }
 
 

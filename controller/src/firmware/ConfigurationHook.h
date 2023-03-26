@@ -13,9 +13,9 @@ struct ConfigurationHook
     bool resetRamSettings();
 
     void reportSettings() const;
-    unsigned long &getAutoreportDelaySeconds();
+    const unsigned long &getAutoreportDelaySeconds();
     bool setAutoreportDelaySeconds(const unsigned long &autoreportDelay);
-    const FanInfo &getFanInfo(uint8_t tempSensorIndex) const { return controller.getFanInfo(tempSensorIndex); }
+    [[nodiscard]] const FanInfo &getFanInfo(uint8_t tempSensorIndex) const { return controller.getFanInfo(tempSensorIndex); }
     bool setRpmAlert(uint8_t fanIndex, const uint32_t &minRpm, const uint32_t &maxRpPwm);
     bool setPwmAlert(uint8_t fanIndex, const uint32_t &minPwm, const uint32_t &maxPwm);
     bool setTemperatureAlert(uint8_t fanIndex, const int16_t &minTempDeciC, const int16_t &maxTempDeciCelsius);
@@ -27,7 +27,7 @@ protected:
     void restoreRamFromSettings();
     void restoreSettingsFromRam();
 
-    FansController &controller; // fan controller; contains effective settings
-    FlashSettings &settings;    // storable settings; loaded from flash or ram; not effective settings
+    FansController &controller; // fan controller; contains effective (ram) settings
+    FlashSettings &settings;    // flash-storable settings; loaded from flash or ram; not effective settings
     unsigned long &autoreportDelayS;
 };
