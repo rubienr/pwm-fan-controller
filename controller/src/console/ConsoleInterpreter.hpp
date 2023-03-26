@@ -3,7 +3,7 @@
 #include "controller/FansController.h"
 #include "fan/FansPwm.h"
 #include "fan/FansTacho.h"
-#include "settings/FlashSettings.h"
+#include "firmware/ConfigurationHook.h"
 #include "temp/TempSensors.h"
 #include <Arduino.h>
 #include <map>
@@ -23,8 +23,8 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
     };
 
 
-    ConsoleInterpreter(char (&buffer)[BufferSize], FansController &controller, TempSensors &sensors, unsigned long &autoreportDelayS, FlashSettings &settings) :
-    buffer(buffer), controller(controller), sensors(sensors), autoreportDelayS(autoreportDelayS), settings(settings)
+    ConsoleInterpreter(char (&buffer)[BufferSize], ConfigurationHook &configurationHook) :
+    buffer(buffer), configurationHook(configurationHook)
     {
         // clang-format off
         commandList.push_back({ .name='h', .callback = &ClassType::commandPrintHelp,           .help = "print this help text:                h" });
@@ -78,7 +78,7 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
 protected:
     bool printFan(uint8_t fanIndex)
     {
-        const FanInfo &info{ controller.getFanInfo(fanIndex) };
+        const FanInfo &info{ configurationHook.getFanInfo(fanIndex) };
 
         Serial.print("fan=");
         Serial.print(fanIndex);
@@ -130,7 +130,7 @@ protected:
         uint8_t fanIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return printFan(fanIndex);
+            if(isFanDefined(fanIndex)) return printFan(fanIndex);
             return false;
         }
         for(auto idx : definedFanIndices)
@@ -183,7 +183,7 @@ protected:
         unsigned long autoreportSeconds;
         if(2 <= sscanf(line, "%c %lu", &c, &autoreportSeconds))
         {
-            autoreportDelayS = autoreportSeconds;
+            configurationHook.setAutoreportDelaySeconds(autoreportSeconds);
             return true;
         }
         return false;
@@ -194,7 +194,7 @@ protected:
     {
         // examples: "l", "l "
         Serial.print("A ");
-        Serial.println(autoreportDelayS);
+        Serial.println(configurationHook.getAutoreportDelaySeconds());
         return true;
     }
 
@@ -205,13 +205,13 @@ protected:
         // fan0 temp0=8 power0=57 temp1=256 power1=55 temp2=804 power2=103 temp3=802 power3=101
         char c;
         uint8_t fanIndex;
-        int16_t temp[4];
-        uint8_t power[4];
+        int16_t temp[numCurvePoints];
+        uint8_t power[numCurvePoints];
+        static_assert(numCurvePoints == 4);
         if((2 + 2 * 4) <= sscanf(line, "%c %hhu %hd %hhu %hd %hhu %hd %hhu %hd %hhu", &c, &fanIndex, &temp[0], &power[0],
                                  &temp[1], &power[1], &temp[2], &power[2], &temp[3], &power[3]))
         {
-            if(isAnyFanWithIndexDefined(fanIndex))
-                return controller.getFanInfo(fanIndex).interpolator.setPowerCurvePoints(power, temp);
+            if(isFanDefined(fanIndex)) return configurationHook.setPowerCurvePoints(fanIndex, power, temp);
         }
         return false;
     }
@@ -219,27 +219,27 @@ protected:
 
     bool printFanCurve(uint8_t fanIndex)
     {
-        const auto &curve{ controller.getFanInfo(fanIndex).interpolator.getCurve() };
+        const auto &curve{ configurationHook.getFanInfo(fanIndex).interpolator.getCurve() };
 
         Serial.print("C ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(curve[0].tempCentiCelsius);
+        Serial.print(curve[0].tempDeciCelsius);
         Serial.print(" ");
         Serial.print(curve[0].power);
 
         Serial.print(" ");
-        Serial.print(curve[1].tempCentiCelsius);
+        Serial.print(curve[1].tempDeciCelsius);
         Serial.print(" ");
         Serial.print(curve[1].power);
 
         Serial.print(" ");
-        Serial.print(curve[2].tempCentiCelsius);
+        Serial.print(curve[2].tempDeciCelsius);
         Serial.print(" ");
         Serial.print(curve[2].power);
 
         Serial.print(" ");
-        Serial.print(curve[3].tempCentiCelsius);
+        Serial.print(curve[3].tempDeciCelsius);
         Serial.print(" ");
         Serial.print(curve[3].power);
 
@@ -254,38 +254,11 @@ protected:
         uint8_t fanIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return printFanCurve(fanIndex);
+            if(isFanDefined(fanIndex)) return printFanCurve(fanIndex);
             return false;
         }
         for(auto idx : definedFanIndices)
             printFanCurve(idx);
-        return true;
-    }
-
-
-    bool setPwmAlert(uint8_t fanIndex, uint8_t pwmMin, uint8_t pwmMax)
-    {
-        FanPwmSpec &pwmInfo{ *controller.getFanInfo(fanIndex).pwmSpecs };
-        pwmInfo.alertBelowDuty = pwmMin;
-        pwmInfo.alertAboveDuty = pwmMax;
-        return true;
-    }
-
-
-    bool setRpmAlert(uint8_t fanIndex, uint8_t rpmMin, uint8_t rpmMax)
-    {
-        FanTachoSpec &rpmInfo{ *controller.getFanInfo(fanIndex).rpmSpecs };
-        rpmInfo.alertBelowRpm = rpmMin;
-        rpmInfo.alertAboveRpm = rpmMax;
-        return true;
-    }
-
-
-    bool setTempAlert(uint8_t fanIndex, const float &rpmMin, const float &rpmMax)
-    {
-        TempSensorSpec &tempInfo{ *controller.getFanInfo(fanIndex).tempSpecs };
-        tempInfo.alertBelowTempC = rpmMin;
-        tempInfo.alertAboveTempC = rpmMax;
         return true;
     }
 
@@ -298,7 +271,7 @@ protected:
         uint8_t pwmMin, pwmMax;
         if(4 <= sscanf(line, "%c %hhu %hhu %hhu", &c, &fanIndex, &pwmMin, &pwmMax))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return setPwmAlert(fanIndex, pwmMin, pwmMax);
+            if(isFanDefined(fanIndex)) return configurationHook.setPwmAlert(fanIndex, pwmMin, pwmMax);
         }
         return false;
     }
@@ -309,9 +282,9 @@ protected:
         Serial.print("P ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(controller.getFanInfo(fanIndex).pwmSpecs->alertBelowDuty);
+        Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpecs->alertBelowDuty);
         Serial.print(" ");
-        Serial.print(controller.getFanInfo(fanIndex).pwmSpecs->alertAboveDuty);
+        Serial.print(configurationHook.getFanInfo(fanIndex).pwmSpecs->alertAboveDuty);
         Serial.println();
         return true;
     }
@@ -321,9 +294,9 @@ protected:
         Serial.print("R ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(controller.getFanInfo(fanIndex).rpmSpecs->alertBelowRpm);
+        Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpecs->alertBelowRpm);
         Serial.print(" ");
-        Serial.print(controller.getFanInfo(fanIndex).rpmSpecs->alertAboveRpm);
+        Serial.print(configurationHook.getFanInfo(fanIndex).rpmSpecs->alertAboveRpm);
         Serial.println();
         return true;
     }
@@ -333,9 +306,9 @@ protected:
         Serial.print("R ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(controller.getFanInfo(fanIndex).tempSpecs->alertBelowTempC * 10, 1);
+        Serial.print(configurationHook.getFanInfo(fanIndex).tempSpecs->alertBelowTempC * 10, 0);
         Serial.print(" ");
-        Serial.print(controller.getFanInfo(fanIndex).tempSpecs->alertAboveTempC * 10, 1);
+        Serial.print(configurationHook.getFanInfo(fanIndex).tempSpecs->alertAboveTempC * 10, 0);
         Serial.println();
         return true;
     }
@@ -347,7 +320,7 @@ protected:
         uint8_t fanIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return printPwmAlert(fanIndex);
+            if(isFanDefined(fanIndex)) return printPwmAlert(fanIndex);
             return false;
         }
 
@@ -365,7 +338,7 @@ protected:
         uint8_t rpmMin, rpmMax;
         if(4 <= sscanf(line, "%c %hhu %hhu %hhu", &c, &fanIndex, &rpmMin, &rpmMax))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return setRpmAlert(fanIndex, rpmMin, rpmMax);
+            if(isFanDefined(fanIndex)) return configurationHook.setRpmAlert(fanIndex, rpmMin, rpmMax);
         }
         return false;
     }
@@ -378,7 +351,7 @@ protected:
         uint8_t fanIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return printRpmAlert(fanIndex);
+            if(isFanDefined(fanIndex)) return printRpmAlert(fanIndex);
             return false;
         }
 
@@ -393,13 +366,11 @@ protected:
         // examples: "T 0 0 1501", "T0 0 1501"
         char c;
         uint8_t fanIndex;
-        int16_t tempMinCentiC, tempMaxCentiC;
+        int16_t tempMinDeciC, tempMaxDeciC;
 
-        if(4 <= sscanf(line, "%c %hhu %hd %hd", &c, &fanIndex, &tempMinCentiC, &tempMaxCentiC))
-        {
-            const float tempMin{ static_cast<float>(tempMinCentiC) * 10.0f }, tempMax{ static_cast<float>(tempMaxCentiC) * 10.0f };
-            if(isAnyFanWithIndexDefined(fanIndex)) return setTempAlert(fanIndex, tempMin, tempMax);
-        }
+        if(4 <= sscanf(line, "%c %hhu %hd %hd", &c, &fanIndex, &tempMinDeciC, &tempMaxDeciC))
+            if(isFanDefined(fanIndex)) return configurationHook.setTemperatureAlert(fanIndex, tempMinDeciC, tempMaxDeciC);
+
         return false;
     }
 
@@ -411,7 +382,7 @@ protected:
         uint8_t fanIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return printTempAlert(fanIndex);
+            if(isFanDefined(fanIndex)) return printTempAlert(fanIndex);
             return false;
         }
 
@@ -428,7 +399,7 @@ protected:
         char c;
         uint8_t fanIndex, tempSensorIndex;
         if(3 <= sscanf(line, "%c %hhu %hhu", &c, &fanIndex, &tempSensorIndex))
-            return controller.updateFanTempSensorIndex(fanIndex, tempSensorIndex);
+            return configurationHook.updateFanTemperatureSensorIndex(fanIndex, tempSensorIndex);
         return false;
     }
 
@@ -438,7 +409,7 @@ protected:
         Serial.print("I ");
         Serial.print(fanIndex);
         Serial.print(" ");
-        Serial.print(controller.getFanInfo(fanIndex).tempSpecs->sensorIndex);
+        Serial.print(configurationHook.getFanInfo(fanIndex).tempSpecs->sensorIndex);
         Serial.println();
         return true;
     }
@@ -451,7 +422,7 @@ protected:
         uint8_t fanIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &fanIndex))
         {
-            if(isAnyFanWithIndexDefined(fanIndex)) return printTempSensorIndex(fanIndex);
+            if(isFanDefined(fanIndex)) return printTempSensorIndex(fanIndex);
             return false;
         }
 
@@ -466,7 +437,7 @@ protected:
         Serial.print("A ");
         Serial.print(tempSensorIndex);
 
-        for(unsigned char c : sensors.getSpecs(tempSensorIndex).sensorAddress)
+        for(unsigned char c : configurationHook.getFanInfo(tempSensorIndex).tempSpecs->sensorAddress)
         {
             Serial.print(" ");
             if(c < 16) Serial.print("0");
@@ -487,7 +458,8 @@ protected:
         if((2 + 8) <= sscanf(line, "%c %hhu %hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx", &c, &tempSensorIndex, &address[0],
                              &address[1], &address[2], &address[3], &address[4], &address[5], &address[6], &address[7]))
         {
-            if(tempSensorIndex < getDefinedTempSensorsCount()) return sensors.setDeviceAddress(tempSensorIndex, address);
+            if(isTemperatureSensorDefined(tempSensorIndex))
+                return configurationHook.updateTemperatureSensorAddress(tempSensorIndex, address);
         }
         return false;
     }
@@ -500,10 +472,10 @@ protected:
         uint8_t tempSensorIndex;
         if(2 <= sscanf(line, "%c %hhu", &c, &tempSensorIndex))
         {
-            if(tempSensorIndex < getDefinedTempSensorsCount()) return printTempSensorAddress(tempSensorIndex);
+            if(isTemperatureSensorDefined(tempSensorIndex)) return printTempSensorAddress(tempSensorIndex);
             return false;
         }
-        for(auto idx = 0; idx < getDefinedTempSensorsCount(); idx++)
+        for(const auto &idx : definedTemperatureSensorIndices)
             printTempSensorAddress(idx);
         return true;
     }
@@ -511,7 +483,7 @@ protected:
 
     bool commandSaveSettings(char (&)[BufferSize])
     {
-        auto result{ settings.storeSettings() };
+        auto result{ configurationHook.storeRamToFlash() };
         if(result == StoreStatus::Stored)
         {
             Serial.println(F("settings saved from RAM to flash"));
@@ -528,7 +500,7 @@ protected:
 
     bool commandLoadSettings(char (&)[BufferSize])
     {
-        auto result{ settings.loadSettings() };
+        auto result{ configurationHook.restoreRamFromFlash() };
         if(result == LoadStatus::Loaded)
         {
             Serial.println(F("settings loaded from flash to RAM"));
@@ -545,14 +517,14 @@ protected:
 
     bool commandPrintSettings(char (&)[BufferSize])
     {
-        settings.reportContainer();
+        configurationHook.reportSettings();
         return true;
     }
 
 
     bool commandResetSettings(char (&)[BufferSize])
     {
-        settings.resetSettings();
+        configurationHook.resetRamSettings();
         Serial.println(F("effective settings in RAM restored to defaults"));
         return true;
     }
@@ -566,10 +538,7 @@ protected:
 
 
     char (&buffer)[BufferSize];
-    FansController &controller;
-    TempSensors &sensors;
-    unsigned long &autoreportDelayS;
-    FlashSettings &settings;
+    ConfigurationHook &configurationHook;
 
     std::unordered_map<uint8_t, CommandCallback> commandMap;
     std::vector<Command> commandList;

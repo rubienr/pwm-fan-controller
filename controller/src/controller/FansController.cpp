@@ -5,12 +5,12 @@
 #include <cmath>
 
 
-#define initFanInfo(n)                                                                                                 \
-    {                                                                                                                  \
-        fansInfo[FAN##n##_INDEX].interpolator.setPowerCurvePoints(FAN##n##_CURVE_POWER, FAN##n##_CURVE_CENTI_CELSIUS); \
-        fansInfo[FAN##n##_INDEX].pwmSpecs = &pwms.getSpecs(FAN##n##_INDEX);                                            \
-        fansInfo[FAN##n##_INDEX].rpmSpecs = &tachos.getSpecs(FAN##n##_INDEX);                                          \
-        fansInfo[FAN##n##_INDEX].tempSpecs = &sensors.getSpecs(FAN##n##_TEMP_SENSOR_INDEX);                            \
+#define initFanInfo(n)                                                                                        \
+    {                                                                                                         \
+        fansInfo[FAN##n].interpolator.setPowerCurvePoints(FAN##n##_CURVE_POWER, FAN##n##_CURVE_DECI_CELSIUS); \
+        fansInfo[FAN##n].pwmSpecs = &pwms.getSpecs(FAN##n);                                                   \
+        fansInfo[FAN##n].rpmSpecs = &tachos.getSpecs(FAN##n);                                                 \
+        fansInfo[FAN##n].tempSpecs = &sensors.getSpecs(FAN##n##_TEMP_SENSOR_INDEX);                           \
     }
 
 
@@ -31,19 +31,19 @@ void FansController::process()
     tachos.processEvery1000Ms();
 
 #if defined(FAN0)
-    updateFanInfo(FAN0_INDEX, FAN0_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN0, FAN0_TEMP_SENSOR_INDEX);
 #endif
 #if defined(FAN1)
-    updateFanInfo(FAN1_INDEX, FAN1_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN1, FAN1_TEMP_SENSOR_INDEX);
 #endif
 #if defined(FAN2)
-    updateFanInfo(FAN2_INDEX, FAN2_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN2, FAN2_TEMP_SENSOR_INDEX);
 #endif
 #if defined(FAN3)
-    updateFanInfo(FAN3_INDEX, FAN3_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN3, FAN3_TEMP_SENSOR_INDEX);
 #endif
 #if defined(FAN4)
-    updateFanInfo(FAN4_INDEX, FAN4_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN4, FAN4_TEMP_SENSOR_INDEX);
 #endif
 }
 
@@ -73,12 +73,18 @@ const FanInfo &FansController::getFanInfo(uint8_t fanIndex) const { return fansI
 
 FanInfo &FansController::getFanInfo(uint8_t fanIndex) { return fansInfo[fanIndex]; }
 
-bool FansController::updateFanTempSensorIndex(uint8_t fanIndex, uint8_t tempSensorIndex)
+bool FansController::updateFanTemperatureSensorIndex(uint8_t fanIndex, uint8_t tempSensorIndex)
 {
-    if(isAnyFanWithIndexDefined(fanIndex) && tempSensorIndex < getDefinedTempSensorsCount())
+    if(isFanDefined(fanIndex) && isTemperatureSensorDefined(tempSensorIndex))
     {
         fansInfo[fanIndex].tempSpecs = &sensors.getSpecs(tempSensorIndex);
         return true;
     }
     return false;
+}
+
+
+bool FansController::updateTemperatureSensorAddress(uint8_t tempSensorIndex, const uint8_t (&address)[8])
+{
+    return sensors.setDeviceAddress(tempSensorIndex, address);
 }

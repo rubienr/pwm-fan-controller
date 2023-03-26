@@ -138,20 +138,20 @@ void Firmware::setup()
     { // firmware info
         Serial.print(millis());
         Serial.print(F(" # PWM controller version "));
-        Serial.print(settings.version.versionNumber.major);
+        Serial.print(version.versionNumber.major);
         Serial.print('.');
-        Serial.print(settings.version.versionNumber.minor);
+        Serial.print(version.versionNumber.minor);
         Serial.print('.');
-        Serial.print(settings.version.versionNumber.patch);
+        Serial.print(version.versionNumber.patch);
         Serial.print(F(" built "));
-        Serial.print(settings.version.buildTimestamp);
+        Serial.print(version.buildTimestamp);
         Serial.println();
 
         Serial.print(millis());
         Serial.print(F(" # fans="));
         Serial.print(getDefinedFansCount());
         Serial.print(F(" sensors="));
-        Serial.println(getDefinedTempSensorsCount());
+        Serial.println(getDefinedTemperatureSensorsCount());
 
         Serial.print(millis());
         Serial.println(F(" # Notes:"));
@@ -232,9 +232,9 @@ void Firmware::setup()
 
         Serial.print(millis());
         Serial.println(F(" # check configured addresses (index depends on configuration order):"));
-        DeviceAddress configuredAddresses[] TEMP_SENSORS_ADDRESS;
-        for(uint8_t idx = sizeof(configuredAddresses) / sizeof(DeviceAddress); idx > 0; idx--)
-            reportTemperatureSensor(idx - 1, configuredAddresses[idx - 1]);
+
+        for(const auto &idx : definedTemperatureSensorIndices)
+            reportTemperatureSensor(idx, definedTemperatureSensors[idx]);
     }
 
     { // explain trend symbols

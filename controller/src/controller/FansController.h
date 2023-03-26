@@ -26,7 +26,8 @@ struct FansController
     void process();
     [[nodiscard]] const FanInfo &getFanInfo(uint8_t fanIndex) const;
     [[nodiscard]] FanInfo &getFanInfo(uint8_t fanIndex);
-    bool updateFanTempSensorIndex(uint8_t fanIndex, uint8_t tempSensorIndex);
+    bool updateFanTemperatureSensorIndex(uint8_t fanIndex, uint8_t tempSensorIndex);
+    bool updateTemperatureSensorAddress(uint8_t tempSensorIndex, const uint8_t (&address)[8]);
 
 protected:
     void updateFanInfo(uint8_t fanIndex, uint8_t fanTempSensorIndex);

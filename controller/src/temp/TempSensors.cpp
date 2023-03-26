@@ -4,41 +4,35 @@
 bool TempSensorSpec::hasAlert() const { return currentTempC < alertBelowTempC || currentTempC > alertAboveTempC; }
 
 
-#define initTempSensorSpec(n)                                                                                     \
-    {                                                                                                             \
-        sensors[FAN##n##_TEMP_SENSOR_INDEX].alertBelowTempC = FAN##n##_ALERT_BELOW_TEMP_C;                        \
-        sensors[FAN##n##_TEMP_SENSOR_INDEX].alertAboveTempC = FAN##n##_ALERT_ABOVE_TEMP_C;                        \
-        sensors[FAN##n##_TEMP_SENSOR_INDEX].sensorIndex = n;                                                      \
-        memcpy(sensors[FAN##n##_TEMP_SENSOR_INDEX].sensorAddress, configuredAddresses[n], sizeof(DeviceAddress)); \
+#define initTempSensorSpec(n)                                                                                           \
+    {                                                                                                                   \
+        sensors[FAN##n##_TEMP_SENSOR_INDEX].alertBelowTempC = 0.1f * FAN##n##_ALERT_BELOW_TEMP_DECI_CELSIUS;            \
+        sensors[FAN##n##_TEMP_SENSOR_INDEX].alertAboveTempC = 0.1f * FAN##n##_ALERT_ABOVE_TEMP_DECI_CELSIUS;            \
+        sensors[FAN##n##_TEMP_SENSOR_INDEX].sensorIndex = n;                                                            \
+        memcpy(sensors[FAN##n##_TEMP_SENSOR_INDEX].sensorAddress, definedTemperatureSensors[n], sizeof(DeviceAddress)); \
     }
 
 
 TempSensors::TempSensors(DallasTemperature &sensorBus) : sensorBus(sensorBus)
 {
-    const DeviceAddress configuredAddresses[] TEMP_SENSORS_ADDRESS;
-    static_assert(getDefinedTempSensorsCount() >= 1 && getDefinedTempSensorsCount() <= 5);
-
-    if(getDefinedTempSensorsCount() > 0) initTempSensorSpec(0);
-    if(getDefinedTempSensorsCount() > 1) initTempSensorSpec(1);
-    if(getDefinedTempSensorsCount() > 2) initTempSensorSpec(2);
-    if(getDefinedTempSensorsCount() > 3) initTempSensorSpec(3);
-    if(getDefinedTempSensorsCount() > 4) initTempSensorSpec(4);
+    if(isTemperatureSensor0Defined) initTempSensorSpec(0);
+    if(isTemperatureSensor1Defined) initTempSensorSpec(0);
+    if(isTemperatureSensor2Defined) initTempSensorSpec(0);
+    if(isTemperatureSensor3Defined) initTempSensorSpec(0);
+    if(isTemperatureSensor4Defined) initTempSensorSpec(0);
 }
 
 
 void TempSensors::begin()
 {
-    sensorBus.setResolution(TEMP_SENSORS_PRECISION_BITS);
+    sensorBus.setResolution(TEMPERATURE_SENSORS_PRECISION_BITS);
     sensorBus.requestTemperatures();
 }
 
 
 bool TempSensors::fetchTemperatureCelsius(uint8_t tempSensorIndex)
 {
-    const DeviceAddress configuredAddresses[] TEMP_SENSORS_ADDRESS;
-    constexpr size_t addressSize{ sizeof(DeviceAddress) };
-    constexpr size_t numAddresses{ sizeof(configuredAddresses) / addressSize };
-    if(tempSensorIndex >= numAddresses) return false;
+    if(!isTemperatureSensorDefined(tempSensorIndex)) return false;
 
     TempSensorSpec &info{ sensors[tempSensorIndex] };
     info.currentTempC = sensorBus.getTempC(info.sensorAddress);
@@ -58,7 +52,7 @@ TempSensorSpec &TempSensors::getSpecs(uint8_t tempSensorIndex) { return sensors[
 
 bool TempSensors::setDeviceAddress(uint8_t tempSensorIndex, const DeviceAddress &deviceAddress)
 {
-    if(tempSensorIndex >= getDefinedTempSensorsCount()) return false;
+    if(!isTemperatureSensorDefined(tempSensorIndex)) return false;
 
     const uint8_t *address{ reinterpret_cast<const uint8_t *>(&deviceAddress) };
     for(size_t idx{ 0 }; idx < sizeof(DeviceAddress); idx++)

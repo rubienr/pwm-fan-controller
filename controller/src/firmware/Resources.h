@@ -15,11 +15,13 @@
 #include <Wire.h>
 #include <elapsedMillis.h>
 
+
 struct Resources
 {
+    static const Version constexpr version{};
+
     struct
     { // version and settings storage
-        const Version version{};
         FlashSettings storage{ FLASH_SETTINGS_FILE_PATH_NAME, version, defaultSettings() };
     } settings;
 
@@ -38,7 +40,7 @@ struct Resources
 
     struct
     {
-        OneWire wire{ TEMP_ONE_WIRE_GPIO_NUM };
+        OneWire wire{ TEMPERATURE_SENSORS_ONE_WIRE_GPIO_NUM };
         DallasTemperature dsSensors{ &wire };
         TempSensors sensors{ dsSensors };
     } temp;
@@ -54,8 +56,9 @@ struct Resources
 #else
         unsigned long autoreportSeconds{ 0 };
 #endif
-
     } timers;
+
+    ConfigurationHook configChangedHook{ controller, settings.storage, timers.autoreportSeconds };
 
     struct
     {
@@ -63,7 +66,7 @@ struct Resources
         uint8_t index : 7; // 0 - 127
         bool lineAvailable{ false };
     } console;
-    ConsoleInterpreter<128> interpreter{ console.buffer, controller, temp.sensors, timers.autoreportSeconds, settings.storage };
+    ConsoleInterpreter<128> interpreter{ console.buffer, configChangedHook };
 
     Resources() { console.index = 0; }
 };

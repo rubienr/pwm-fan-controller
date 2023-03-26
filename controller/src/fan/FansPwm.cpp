@@ -5,19 +5,19 @@
 
 bool FanPwmSpec::hasAlert() const { return currentDuty < alertBelowDuty || currentDuty > alertAboveDuty; }
 
-#define initFanPwmSpec(n)                                                   \
-    {                                                                       \
-        fans[FAN##n##_INDEX].minDuty = FAN##n##_PWM_MIN_DUTY;               \
-        fans[FAN##n##_INDEX].maxDuty = FAN##n##_PWM_MAX_DUTY;               \
-        fans[FAN##n##_INDEX].defaultDuty = FAN##n##_PWM_DEFAULT_DUTY;       \
-        fans[FAN##n##_INDEX].errorDuty = FAN##n##_PWM_ERROR_DUTY;           \
-        fans[FAN##n##_INDEX].alertBelowDuty = FAN##n##_ALERT_BELOW_PWM;     \
-        fans[FAN##n##_INDEX].alertAboveDuty = FAN##n##_ALERT_ABOVE_PWM;     \
-        fans[FAN##n##_INDEX].resolutionBids = FAN##n##_PWM_RESOLUTION_BITS; \
-        fans[FAN##n##_INDEX].frequencyHz = FAN##n##_PWM_FREQUENCY_HZ;       \
-        fans[FAN##n##_INDEX].pwmChannel = FAN##n##_PWM_CHANNEL;             \
-        fans[FAN##n##_INDEX].pwmGpioNum = FAN##n##_PWM_GPIO_NUM;            \
-        if(!configureFanPwm(FAN##n##_INDEX)) success = false;               \
+#define initFanPwmSpec(n)                                           \
+    {                                                               \
+        fans[FAN##n].minDuty = FAN##n##_PWM_MIN_DUTY;               \
+        fans[FAN##n].maxDuty = FAN##n##_PWM_MAX_DUTY;               \
+        fans[FAN##n].defaultDuty = FAN##n##_PWM_DEFAULT_DUTY;       \
+        fans[FAN##n].errorDuty = FAN##n##_PWM_ERROR_DUTY;           \
+        fans[FAN##n].alertBelowDuty = FAN##n##_ALERT_BELOW_PWM;     \
+        fans[FAN##n].alertAboveDuty = FAN##n##_ALERT_ABOVE_PWM;     \
+        fans[FAN##n].resolutionBids = FAN##n##_PWM_RESOLUTION_BITS; \
+        fans[FAN##n].frequencyHz = FAN##n##_PWM_FREQUENCY_HZ;       \
+        fans[FAN##n].pwmChannel = FAN##n##_PWM_CHANNEL;             \
+        fans[FAN##n].pwmGpioNum = FAN##n##_PWM_GPIO_NUM;            \
+        if(!configureFanPwm(FAN##n)) success = false;               \
     }
 
 bool FansPwm::begin()

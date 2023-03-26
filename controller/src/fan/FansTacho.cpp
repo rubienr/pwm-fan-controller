@@ -7,14 +7,14 @@
 
 bool FanTachoSpec::hasAlert() const { return currentRpm < alertBelowRpm || currentRpm > alertAboveRpm; }
 
-#define initFanTachoSpec(n)                                                   \
-    {                                                                         \
-        fans[FAN##n##_INDEX].alertBelowRpm = FAN##n##_ALERT_BELOW_RPM;        \
-        fans[FAN##n##_INDEX].alertAboveRpm = FAN##n##_ALERT_ABOVE_RPM;        \
-        fans[FAN##n##_INDEX].counterUnit = FAN##n##_TACHO_COUNTER_UNIT;       \
-        fans[FAN##n##_INDEX].counterChannel = FAN##n##_TACHO_COUNTER_CHANNEL; \
-        fans[FAN##n##_INDEX].counterGpioNum = FAN##n##_TACHO_GPIO_NUM;        \
-        if(!setupCounterUnit(FAN##n##_INDEX)) success = false;                \
+#define initFanTachoSpec(n)                                           \
+    {                                                                 \
+        fans[FAN##n].alertBelowRpm = FAN##n##_ALERT_BELOW_RPM;        \
+        fans[FAN##n].alertAboveRpm = FAN##n##_ALERT_ABOVE_RPM;        \
+        fans[FAN##n].counterUnit = FAN##n##_TACHO_COUNTER_UNIT;       \
+        fans[FAN##n].counterChannel = FAN##n##_TACHO_COUNTER_CHANNEL; \
+        fans[FAN##n].counterGpioNum = FAN##n##_TACHO_GPIO_NUM;        \
+        if(!setupCounterUnit(FAN##n)) success = false;                \
     }
 
 bool FansTacho::begin()

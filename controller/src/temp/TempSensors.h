@@ -26,5 +26,5 @@ struct TempSensors
 
 protected:
     DallasTemperature &sensorBus;
-    TempSensorSpec sensors[getDefinedTempSensorsCount()]{};
+    TempSensorSpec sensors[getDefinedTemperatureSensorsCount()]{};
 };
