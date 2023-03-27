@@ -3,48 +3,64 @@
 A simple fan controller that controls up to 5 PWM-Fans (i.e. Nocuta 4-Pin PWM fan,
 see [whitepaper](./docs/noctua_pwm_specifications_white_paper.pdf)) by monitoring
 the temperature from up to 5 thermal sensors (i.e. DS18B20). The firmware monitors
-the temperature and generates a PWM signal for the fan.
-The PWM signal is computed according to a pre-configured power curve.
+temperature and generates a PWM signal for the corresponding fan.
+The PWM signal is computed according to a simple pre-configured four points power curve.
 The response from the fan (tacho signal) is monitored as well.
 
-Due to the required tacho-inputs and PWM-outputs for the moment only Wroom32 is
-supported (i.e. [lolin32 board with oled display](https://randomnerdtutorials.com/esp32-built-in-oled-ssd1306/)).
+Due to the required tacho-inputs and PWM-outputs for the moment only
+the [lolin32 board with oled display](https://randomnerdtutorials.com/esp32-built-in-oled-ssd1306/) (ESP32) is
+supported.
 
 Required hardware:
 
-- one PWM channel at 25kHz each fan: `ledcSetup()`, `ledcAttachPin()` and `ledcWrite()` (
-  see [LEDC reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html))
-- one PCNT (Pulse Count Controller) each fan (
-  see [PCNT reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html))
+- One PWM channel each fan:
+    - at 25kHz `ledcSetup()`, `ledcAttachPin()` and `ledcWrite()` (
+      see [LEDC reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html))
+    - each GPIO connected to PWM must provide pull-up
+- one PCNT (Pulse Count Controller) each fan (see
+  [PCNT reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html))
 - one GPIO for OneWire (software OneWire for Dallas temperature sensor bus)
 
-References
+Notes on ESP32:
 
+- GPIO6 (SD_CLK), GPIO7 (SD_DATA0), GPIO8 (SD_DATA1), GPIO9 (SD_DATA2), GPIO10 (SD_DATA3), and GPIO11 (SD_CMD) are
+  conntected to internal flash memory and must not be used as regular I/O.
+- GPIO36-GPIO39 (SENSOR_VP, SENSOR_CAPP, SENSOR_CAPN, SENSOR_VN) can only be configured as input GPIO. These
+  input-only pads do not feature an output driver or
+  internal pull-up/pull-down circuitry.
+
+References:
+
+- [lolin32 board with oled display](https://randomnerdtutorials.com/esp32-built-in-oled-ssd1306/)
+- [LEDC reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html)
+- [PCNT reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html)
+- [Noctua whitepaper](./docs/noctua_pwm_specifications_white_paper.pdf)
 - [ESP32 manual](./docs/esp32_technical_reference_manual_en.pdf)
 
 # Features
 
 - fault detection
-  - temperature sensor readout error
-  - tacho signal PCNT setup error
+    - temperature sensor readout error
+    - tacho signal PCNT setup error
 - fault action
-  - fall back to specific error-PWM
+    - fall back to specific error-PWM
 - alert if parameter exceeds configured boundary
-  - temperature
-  - PWM
-  - RPM
+    - temperature
+    - PWM
+    - RPM
 - reporting
-  - briefly on display
-  - detailed by serial
-- serial console, see 'h' for help
-- load modify and save configuration from/to flash at runtime (serial console)
-  - power curve 
-  - alert thresholds
-  - sensor address
-  - fan reference sensor
-  - logging
+    - briefly on display
+    - detailed by serial
+- interactive serial console, see 'h' for supported commands
+- load, modify, reset and save configuration from/to flash at runtime (serial console)
+    - power curve
+    - alert thresholds (RPM, PWM, temperature)
+    - sensor address
+    - fan reference sensor
+    - logging
 
 ## Roadmap (not implemented yet)
+
 - OTA firmware update
 
 # Examples
@@ -89,16 +105,17 @@ temp[N]:         int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501, te
 ```
 
 ## Modify Fan Sensor
+
 ```bash
 # print fan to sensor dependencies
-i 
+i
 I 0 0
 I 1 1
 I 2 2
 I 3 3
 I 4 4
 # print temperature sensors' address
-a 
+a
 A 0 28 FF 64 02 19 86 14 FC
 A 1 28 D9 EC 09 06 00 00 F5
 A 2 28 FF 64 02 19 8B D0 DE
