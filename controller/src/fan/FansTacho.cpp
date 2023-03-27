@@ -39,7 +39,7 @@ bool FansTacho::setupCounterUnit(uint8_t fanIndex)
     configuration.counter_h_lim = 10000;
 
     const FanTachoSpec &info{ fans[fanIndex] };
-    pinMode(info.counterGpioNum, INPUT_PULLDOWN);
+    pinMode(info.counterGpioNum, INPUT_PULLUP);
     configuration.pulse_gpio_num = info.counterGpioNum;
     configuration.unit = info.counterUnit;
     configuration.channel = info.counterChannel;
