@@ -29,11 +29,11 @@
 
 #define FAN0                          // comment to disable feature
 #if defined(FAN0)
-    #define FAN0_TACHO_GPIO_NUM                36                             // tacho input pin
+    #define FAN0_TACHO_GPIO_NUM                0                              // tacho input pin
     #define FAN0_TACHO_COUNTER_UNIT            pcnt_unit_t::PCNT_UNIT_0       // signal counter unit
     #define FAN0_TACHO_COUNTER_CHANNEL         pcnt_channel_t::PCNT_CHANNEL_0 // signal counter unit-channel
 
-    #define FAN0_PWM_GPIO_NUM                  25    // PWM output pin
+    #define FAN0_PWM_GPIO_NUM                  2     // PWM output pin
     #define FAN0_PWM_CHANNEL                   0     // PWM channel
     #define FAN0_PWM_FREQUENCY_HZ              25000 // recommended 25kHz
     #define FAN0_PWM_RESOLUTION_BITS           8     // recommended 8bit
@@ -59,11 +59,11 @@
 
 #define FAN1 // comment to disable feature
 #if defined(FAN1)
-    #define FAN1_TACHO_GPIO_NUM                39                             // tacho input pin
+    #define FAN1_TACHO_GPIO_NUM                14                             // tacho input pin
     #define FAN1_TACHO_COUNTER_UNIT            pcnt_unit_t::PCNT_UNIT_1       // signal counter unit
     #define FAN1_TACHO_COUNTER_CHANNEL         pcnt_channel_t::PCNT_CHANNEL_0 // signal counter unit-channel
 
-    #define FAN1_PWM_GPIO_NUM                  16    // PWM output pin
+    #define FAN1_PWM_GPIO_NUM                  12    // PWM output pin
     #define FAN1_PWM_CHANNEL                   1     // PWM channel
     #define FAN1_PWM_FREQUENCY_HZ              25000 // recommended 25kHz
     #define FAN1_PWM_RESOLUTION_BITS           8     // recommended 8bit
@@ -89,11 +89,11 @@
 
 #define FAN2 // comment to disable feature
 #if defined(FAN2)
-    #define FAN2_TACHO_GPIO_NUM                0                              // tacho input pin
+    #define FAN2_TACHO_GPIO_NUM                13                             // tacho input pin
     #define FAN2_TACHO_COUNTER_UNIT            pcnt_unit_t::PCNT_UNIT_2       // signal counter unit
     #define FAN2_TACHO_COUNTER_CHANNEL         pcnt_channel_t::PCNT_CHANNEL_0 // signal counter unit-channel
 
-    #define FAN2_PWM_GPIO_NUM                  2     // PWM output pin
+    #define FAN2_PWM_GPIO_NUM                  15    // PWM output pin
     #define FAN2_PWM_CHANNEL                   2     // PWM channel
     #define FAN2_PWM_FREQUENCY_HZ              25000 // recommended 25kHz
     #define FAN2_PWM_RESOLUTION_BITS           8     // recommended 8bit
@@ -119,11 +119,11 @@
 
 #define FAN3 // comment to disable feature
 #if defined(FAN3)
-    #define FAN3_TACHO_GPIO_NUM                14                             // tacho input pin
+    #define FAN3_TACHO_GPIO_NUM                25                             // tacho input pin
     #define FAN3_TACHO_COUNTER_UNIT            pcnt_unit_t::PCNT_UNIT_3       // signal counter unit
     #define FAN3_TACHO_COUNTER_CHANNEL         pcnt_channel_t::PCNT_CHANNEL_0 // signal counter unit-channel
 
-    #define FAN3_PWM_GPIO_NUM                  12    // PWM output pin
+    #define FAN3_PWM_GPIO_NUM                  26    // PWM output pin
     #define FAN3_PWM_CHANNEL                   3     // PWM channel
     #define FAN3_PWM_FREQUENCY_HZ              25000 // recommended 25kHz
     #define FAN3_PWM_RESOLUTION_BITS           8     // recommended 8bit
@@ -149,11 +149,11 @@
 
 #define FAN4 // comment to disable feature
 #if defined(FAN4)
-    #define FAN4_TACHO_GPIO_NUM                13                             // tacho input pin
+    #define FAN4_TACHO_GPIO_NUM                19                             // tacho input pin
     #define FAN4_TACHO_COUNTER_UNIT            pcnt_unit_t::PCNT_UNIT_4       // signal counter unit
     #define FAN4_TACHO_COUNTER_CHANNEL         pcnt_channel_t::PCNT_CHANNEL_0 // signal counter unit-channel
 
-    #define FAN4_PWM_GPIO_NUM                  15    // PWM output pin
+    #define FAN4_PWM_GPIO_NUM                  18    // PWM output pin
     #define FAN4_PWM_CHANNEL                   4     // PWM channel
     #define FAN4_PWM_FREQUENCY_HZ              25000 // recommended 25kHz
     #define FAN4_PWM_RESOLUTION_BITS           8     // recommended 8bit
@@ -180,7 +180,7 @@
 
 // ----- section temperature sensors (DS18xxx)
 
-#define TEMPERATURE_SENSORS_ONE_WIRE_GPIO_NUM 26 // one wire pin
+#define TEMPERATURE_SENSORS_ONE_WIRE_GPIO_NUM 16 // one wire pin
 #define TEMPERATURE_SENSORS_PRECISION_BITS    10 // 9-12 bits; conversion time: 9-bit about 94ms, 12-bit about 750ms
 
 // Define up to 5 sensors that shall match one or multiple fan(s) by index FANx_TEMP_SENSOR_INDEX.
