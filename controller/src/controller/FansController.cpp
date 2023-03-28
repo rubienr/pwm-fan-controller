@@ -33,33 +33,55 @@ void FansController::process()
     fansTacho.processEvery1000Ms();
 
 #if defined(FAN0)
-    updateFanInfo(FAN0, FAN0_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN0);
 #endif
 #if defined(FAN1)
-    updateFanInfo(FAN1, FAN1_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN1);
 #endif
 #if defined(FAN2)
-    updateFanInfo(FAN2, FAN2_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN2);
 #endif
 #if defined(FAN3)
-    updateFanInfo(FAN3, FAN3_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN3);
 #endif
 #if defined(FAN4)
-    updateFanInfo(FAN4, FAN4_TEMP_SENSOR_INDEX);
+    updateFanInfo(FAN4);
 #endif
 }
 
 
-void FansController::updateFanInfo(uint8_t fanIndex, uint8_t fanTempSensorIndex)
+bool FansController::hasError(uint8_t fanIndex) const
 {
-    temperatureSensors.fetchTemperatureCelsius(fanTempSensorIndex);
-    FanInfo &info{ fansInfo[fanIndex] };
-    {
-        const auto &temperatureSensorSpec{ temperatureSensors.getSpec(fanTempSensorIndex) };
-        info.fanTemperatureSpec->currentTempC = temperatureSensorSpec.currentTempC;
-    }
+    return fansTemperature.getSpec(fanIndex).hasError || fansPwm.getSpec(fanIndex).hasError || fansTacho.getSpec(fanIndex).hasError;
+}
 
-    if(info.rpmSpec->hasError or info.fanTemperatureSpec->hasError) { fansPwm.setErrorPwm(fanIndex); }
+
+bool FansController::hasAlert(uint8_t fanIndex) const
+{
+    return fansTemperature.getSpec(fanIndex).hasAlert() || fansPwm.getSpec(fanIndex).hasAlert() || fansTacho.getSpec(fanIndex).hasAlert();
+}
+
+
+void FansController::fetchTemperatureSensorData(const FanInfo &info) const
+{
+    temperatureSensors.fetchTemperatureCelsius(info.fanTemperatureSpec->temperatureSensorIndex);
+    const auto &temperatureSensorSpec{ temperatureSensors.getSpec(fansInfo->fanTemperatureSpec->temperatureSensorIndex) };
+    info.fanTemperatureSpec->currentTempC = temperatureSensorSpec.currentTempC;
+    info.fanTemperatureSpec->hasError = temperatureSensorSpec.hasError;
+}
+
+
+void FansController::updateFanInfo(uint8_t fanIndex)
+{
+    FanInfo &info{ fansInfo[fanIndex] };
+    fetchTemperatureSensorData(info);
+
+    if(hasError(fanIndex))
+    {
+        fansPwm.setErrorPwm(fanIndex);
+        info.interpolatedPowerPercent = 100.0f * static_cast<float>(info.pwmSpec->errorDuty) / static_cast<float>(info.pwmSpec->maxDuty);
+        info.trend = 0;
+    }
     else
     {
         info.interpolator.interpolatePowerFromTemperature(info.temperatureSensorSpec->currentTempC);
