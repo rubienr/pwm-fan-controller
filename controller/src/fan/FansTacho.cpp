@@ -31,6 +31,7 @@ bool FansTacho::begin()
 
 bool FansTacho::setupCounterUnit(uint8_t fanIndex)
 {
+    bool success{ true };
     pcnt_config_t configuration{};
     configuration.ctrl_gpio_num = -1;
     configuration.pos_mode = pcnt_channel_edge_action_t::PCNT_CHANNEL_EDGE_ACTION_INCREASE;
@@ -43,7 +44,12 @@ bool FansTacho::setupCounterUnit(uint8_t fanIndex)
     configuration.pulse_gpio_num = info.counterGpioNum;
     configuration.unit = info.counterUnit;
     configuration.channel = info.counterChannel;
-    return (ESP_OK == pcnt_unit_config(&configuration));
+
+    success = (ESP_OK == pcnt_unit_config(&configuration)) && success;
+    success = (ESP_OK == pcnt_set_filter_value(configuration.unit, 255)) && success;
+    success = (ESP_OK == pcnt_filter_enable(configuration.unit)) && success;
+
+    return success;
 }
 
 

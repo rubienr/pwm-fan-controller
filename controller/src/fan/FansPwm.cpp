@@ -36,6 +36,7 @@ bool FansPwm::configureFanPwm(uint8_t fanIndex)
 {
     const FanPwmSpec &info{ fans[fanIndex] };
     uint32_t configuredFrequency{ ledcSetup(info.pwmChannel, info.frequencyHz, info.resolutionBids) };
+    pinMode(info.pwmGpioNum, OUTPUT);
     ledcAttachPin(info.pwmGpioNum, info.pwmChannel);
     setPwm(fanIndex, info.defaultDuty);
     return configuredFrequency == info.frequencyHz;
