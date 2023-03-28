@@ -25,26 +25,30 @@ void Firmware::displayFan(uint8_t fanIndex)
     if(info.fanTemperatureSpec->hasError || info.rpmSpec->hasError || info.pwmSpec->hasAlert() || info.rpmSpec->hasAlert())
         display.screen.setTextColor(BLACK, WHITE);
     display.screen.print(fanIndex);
+
     display.screen.print(F(" "));
     int16_t rpm{ info.rpmSpec->currentRpm };
     if(rpm < 10) display.screen.print(F(" "));
     if(rpm < 100) display.screen.print(F(" "));
     if(rpm < 1000) display.screen.print(F(" "));
+    if(rpm < 10000) display.screen.print(F(" "));
     display.screen.print(rpm);
+
+    display.screen.print(F(" "));
     float tempCelsius{ info.fanTemperatureSpec->currentTempC };
+    if(tempCelsius > -100 && tempCelsius < 0) display.screen.print(F(" "));
+    if(tempCelsius > -10 && tempCelsius < 0) display.screen.print(F(" "));
+    if(tempCelsius >= 0) display.screen.print(F(" ")); // reserved space for negative sign
     if(tempCelsius < 10 && tempCelsius >= 0) display.screen.print(F(" "));
     if(tempCelsius < 100 && tempCelsius >= 0) display.screen.print(F(" "));
     display.screen.print(tempCelsius, 1);
+
     display.screen.print(F(" "));
     auto power{ info.interpolatedPowerPercent };
     if(power < 10) display.screen.print(F(" "));
     if(power < 100) display.screen.print(F(" "));
     display.screen.print(power, 1);
-    display.screen.print(F(" "));
-    uint32_t pwm{ info.pwmSpec->currentDuty };
-    if(pwm < 10) display.screen.print(F(" "));
-    if(pwm < 100) display.screen.print(F(" "));
-    display.screen.print(pwm);
+
     display.screen.println();
     display.screen.setTextColor(WHITE, BLACK);
 }
@@ -52,7 +56,7 @@ void Firmware::displayFan(uint8_t fanIndex)
 
 void Firmware::displayFansInfo()
 {
-    display.screen.println(F("#  r/m degC  Pow% PWM"));
+    display.screen.println(F("f rnd/m degreC power%"));
 
     for(auto fanIndex : definedFanIndices)
         displayFan(fanIndex);
