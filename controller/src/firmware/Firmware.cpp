@@ -8,6 +8,7 @@ char Firmware::getTrendSymbol(const FanInfo &info)
     if(info.rpmSpec->hasError) return 'R';
     if(info.rpmSpec->hasAlert()) return 'r';
 
+    if(info.pwmSpec->hasError) return 'P';
     if(info.pwmSpec->hasAlert()) return 'p';
 
     if(info.fanTemperatureSpec->hasError) return 'T';
@@ -21,10 +22,10 @@ char Firmware::getTrendSymbol(const FanInfo &info)
 
 void Firmware::displayFan(uint8_t fanIndex)
 {
-    const FanInfo &info{ controller.getFanInfo(fanIndex) };
-    if(info.fanTemperatureSpec->hasError || info.rpmSpec->hasError || info.pwmSpec->hasAlert() || info.rpmSpec->hasAlert())
-        display.screen.setTextColor(BLACK, WHITE);
+    if(controller.hasError(fanIndex) || controller.hasAlert(fanIndex)) display.screen.setTextColor(BLACK, WHITE);
+
     display.screen.print(fanIndex);
+    const FanInfo &info{ controller.getFanInfo(fanIndex) };
 
     display.screen.print(F(" "));
     int16_t rpm{ info.rpmSpec->currentRpm };

@@ -9,6 +9,7 @@ struct FanTemperatureSpec
 {
     [[nodiscard]] bool hasAlert() const; // true if temperature is not within alertBelowTempC and alertAboveTempC
     bool hasError{ false };              // true if temp sensor readout was erroneous
+
     float alertBelowTempC{ 0 };
     float alertAboveTempC{ 0 };
     uint8_t temperatureSensorIndex{ 0 };

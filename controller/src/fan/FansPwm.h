@@ -5,6 +5,7 @@
 struct FanPwmSpec
 {
     [[nodiscard]] bool hasAlert() const; // true if PWM is not within alertBelowDuty and alertAboveDuty
+    bool hasError{ false };
 
     uint32_t minDuty{ 0 };
     uint32_t maxDuty{ 0 };
