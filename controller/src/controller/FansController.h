@@ -34,6 +34,7 @@ struct FansController
     bool updateFanTemperatureSensorIndex(uint8_t fanIndex, uint8_t tempSensorIndex);
     bool updateTemperatureSensorAddress(uint8_t tempSensorIndex, const uint8_t (&address)[8]);
     bool getTemperatureSensorAddress(uint8_t tempSensorIndex, uint8_t (&address)[8]);
+    void setForcedErrorState(bool forcedErrorFlag);
 
 protected:
     void fetchTemperatureSensorData(const FanInfo &info) const;
@@ -44,4 +45,5 @@ protected:
     FansPwm &fansPwm;
     FansTacho &fansTacho;
     FanInfo fansInfo[5]{}; // bundled specs
+    bool forcedErrorState{ false };
 };

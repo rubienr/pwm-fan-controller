@@ -44,13 +44,13 @@ StoreStatus FlashSettings::writeSettingsToFilesystem(Container &c)
         else
         {
             Serial.print(millis());
-            Serial.println(F(" # configuration container stored"));
+            Serial.println(F(" # configuration container saved"));
             reportContainer();
             return StoreStatus::Stored;
         }
     }
     Serial.print(millis());
-    Serial.print(F(" # failed to load configuration container: "));
+    Serial.print(F(" # failed save configuration container: "));
     storeStatusToStr(storeStatus);
 
     return storeStatus;
@@ -70,7 +70,7 @@ LoadStatus FlashSettings::loadSettings()
             loadStatus = LoadStatus::VersionMismatch;
         else
         {
-            container = loadedContainer;
+            memcpy(&container, &loadedContainer, sizeof(Container));
             Serial.print(millis());
             Serial.println(F(" # configuration container loaded"));
             reportContainer();

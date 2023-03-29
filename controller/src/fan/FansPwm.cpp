@@ -18,7 +18,7 @@ bool FanPwmSpec::hasAlert() const { return currentDuty < alertBelowDuty || curre
         fans[FAN##n].pwmChannel = FAN##n##_PWM_CHANNEL;             \
         fans[FAN##n].pwmGpioNum = FAN##n##_PWM_GPIO_NUM;            \
         fans[FAN##n].hasError = !configureFanPwm(FAN##n);           \
-        success = fans[FAN##n].hasError;                            \
+        success = !fans[FAN##n].hasError;                           \
     }
 
 bool FansPwm::begin()

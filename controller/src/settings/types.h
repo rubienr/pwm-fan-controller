@@ -44,6 +44,17 @@ struct FanSettings
 void reportFanSettings(const FanSettings &f);
 
 
+struct WifiSettings
+{
+    void reset();
+    char ssid[OTA_WIFI_MAX_SSID_LENGTH]{ 0 };
+    char password[OTA_WIFI_MAX_PASSWORD_LENGTH]{ 0 };
+};
+
+
+void reportWifiSettings(const WifiSettings &w);
+
+
 struct TemperatureSensorSettings
 {
     void reset(uint8_t tempSensorIndex);
@@ -65,6 +76,8 @@ template <uint8_t numFans, uint8_t numTemperatureSensors> struct SettingsMFansNS
 
         for(const auto &idx : definedTemperatureSensorIndices)
             temperatureSensors[idx].reset(idx);
+
+        wifi.reset();
     }
 
     unsigned long serialAutoreportSeconds
@@ -77,6 +90,7 @@ template <uint8_t numFans, uint8_t numTemperatureSensors> struct SettingsMFansNS
     };
     FanSettings fans[numFans]{};
     TemperatureSensorSettings temperatureSensors[numTemperatureSensors]{};
+    WifiSettings wifi{};
 
 } __attribute__((packed));
 

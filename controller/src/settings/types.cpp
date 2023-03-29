@@ -144,6 +144,10 @@ void reportSettings(const Settings &s)
         Serial.println(F("]:"));
         reportFanSettings(fan);
     }
+
+    Serial.print(millis());
+    Serial.println(F(" #       wifi:"));
+    reportWifiSettings(s.wifi);
 }
 
 
@@ -190,6 +194,30 @@ void reportVersion(const Version &v)
     Serial.print(millis());
     Serial.print(F(" #       buildTimestamp=\""));
     Serial.print(v.buildTimestamp);
+    Serial.println(F("\""));
+}
+
+
+void WifiSettings::reset()
+{
+    for(auto &c : ssid)
+        c = 0;
+    for(auto &c : password)
+        c = 0;
+}
+
+
+void reportWifiSettings(const WifiSettings &w)
+{
+    Serial.print(millis());
+    Serial.print(F(" #         ssid=\""));
+    Serial.print(w.ssid);
+    Serial.println(F("\""));
+
+    Serial.print(millis());
+    Serial.print(F(" #         password=\""));
+    for(const char *idx{ &w.password[0] }; *idx != 0; idx++)
+        Serial.print(F("*"));
     Serial.println(F("\""));
 }
 
@@ -256,3 +284,4 @@ void FanSettings::reset(uint8_t fanIndex)
         return;
     }
 }
+

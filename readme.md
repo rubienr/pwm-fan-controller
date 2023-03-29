@@ -58,9 +58,6 @@ References:
     - sensor address
     - fan reference sensor
     - logging
-
-## Roadmap (not implemented yet)
-
 - OTA firmware update
 
 # Examples
@@ -92,6 +89,9 @@ s  load  settings:                      s
 d  print settings:                      d
 x  reset settings:                      x
 X  reboot device:                       X
+o  enable OTA on port 3232:             o
+w  print wifi settings:                 w 
+W  set wifi settings:                   W "ssid" "password"
 Units:
 fanIndex:        uint8
 tempSensorIndex: uint8
@@ -220,6 +220,9 @@ Container:
             alertAboveRpm=1500
             alertBelowTempDeciC=0
             alertAboveTempDeciC=600
+       wifi:
+         ssid="0xC0FFEE"
+         password="*****"
  init temperature sensors ... 
  reported sensor bus power is VCC
  discovered 5 temperature sensors (index depends on bus order):

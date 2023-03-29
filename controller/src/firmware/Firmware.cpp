@@ -1,5 +1,8 @@
 #include "Firmware.h"
 #include "LittleFS.h"
+#if defined(OTA_UPDATE)
+    #include "ArduinoOTA.h"
+#endif
 
 char Firmware::getTrendSymbol(const FanInfo &info)
 {
@@ -178,17 +181,17 @@ void Firmware::setup()
         if(LittleFS.begin(true))
         {
             Serial.print(millis());
-            Serial.print(F(" # LittleFS mounted: used="));
+            Serial.print(F(" # filesystem mounted: used="));
             Serial.print(LittleFS.usedBytes());
             Serial.print(F(", total="));
             Serial.print(LittleFS.totalBytes());
             Serial.println(F(" [Bytes]"));
-            settings.storage.loadSettings();
+            configChangedHook.loadFlashToRam();
         }
         else
         {
             Serial.print(millis());
-            Serial.println(F(" # failed to mount LittleFS, use default settings"));
+            Serial.println(F(" # failed to mount filesystem, formatting and use default settings"));
         }
     }
 
@@ -306,6 +309,47 @@ void Firmware::setup()
 
 void Firmware::process()
 {
+#if defined(OTA_UPDATE)
+    static bool lastOtaState{ ota.enableOtaUpdate };
+    if(ota.enableOtaUpdate)
+    {
+        lastOtaState = ota.enableOtaUpdate;
+        if(!ota.isOtaConfigured)
+        {
+            ota.isOtaConfigured = otaUpdater.enable();
+            controller.setForcedErrorState(true);
+            controller.process();
+
+            display.screen.clearDisplay();
+            display.screen.setCursor(0, 0);
+            display.screen.println("connected to wifi:");
+            display.screen.println(ota.ssid);
+            display.screen.print("signal: ");
+            display.screen.print(static_cast<int16_t>(WiFi.RSSI()));
+            display.screen.println("dBm");
+            display.screen.println("IP address: ");
+            display.screen.println(WiFi.localIP());
+            display.screen.println("hostname: ");
+            display.screen.print(OTA_HOSTNAME);
+            display.screen.print(".local");
+            display.screen.display();
+
+            ArduinoOTA.setRebootOnSuccess(true);
+            ArduinoOTA.setMdnsEnabled(true);
+            ArduinoOTA.setHostname(OTA_HOSTNAME);
+        }
+        else OtaUpdate::process();
+    }
+    else if(!ota.enableOtaUpdate && lastOtaState)
+    {
+        OtaUpdate::disable();
+        lastOtaState = false;
+        ota.isOtaConfigured = false;
+        controller.setForcedErrorState(false);
+        controller.process();
+    }
+    else
+#endif
     if(timers.oneSecondProcessTriggerCounterMs >= 1000)
     {
         unsigned long currentSeparationMs = timers.oneSecondProcessTriggerCounterMs;

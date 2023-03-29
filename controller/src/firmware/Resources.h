@@ -6,15 +6,17 @@
 #include "fan/FansPwm.h"
 #include "fan/FansTacho.h"
 #include "fan/FansTemperature.h"
+#include "ota_update/OtaUpdate.h"
 #include "sensors/TempSensors.h"
 #include "settings/FlashSettings.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
+#include <WiFi.h>
+#include <WiFiClient.h>
 #include <Wire.h>
 #include <elapsedMillis.h>
-
 
 struct Resources
 {
@@ -49,6 +51,19 @@ struct Resources
     FansController controller{ temp.sensors, temp.fansTemperature, fan.pwms, fan.tachos };
 
     struct
+    { // over the air update
+#if defined(OTA_UPDATE)
+        bool isOtaConfigured{ false };
+        bool enableOtaUpdate{ false };
+#endif
+        char ssid[OTA_WIFI_MAX_SSID_LENGTH]{ 0 };
+        char password[OTA_WIFI_MAX_PASSWORD_LENGTH]{ 0 };
+    } ota;
+#if defined(OTA_UPDATE)
+    OtaUpdate otaUpdater{ ota.ssid, ota.password };
+#endif
+
+    struct
     {
         elapsedMillis oneSecondProcessTriggerCounterMs{ 0 };
 #if defined(SERIAL_AUTOREPORT)
@@ -59,7 +74,8 @@ struct Resources
 #endif
     } timers;
 
-    ConfigurationHook configChangedHook{ controller, settings.storage, timers.autoreportSeconds };
+    ConfigurationHook configChangedHook{ controller, settings.storage, timers.autoreportSeconds, ota.ssid, ota.password };
+
 
     struct
     {
@@ -67,7 +83,15 @@ struct Resources
         uint8_t index : 7; // 0 - 127
         bool lineAvailable{ false };
     } console;
-    ConsoleInterpreter<128> interpreter{ console.buffer, configChangedHook };
+
+    ConsoleInterpreter<128> interpreter
+    {
+        console.buffer, configChangedHook
+#if defined(OTA_UPDATE)
+        ,
+        ota.enableOtaUpdate
+#endif
+    };
 
     Resources() { console.index = 0; }
 };

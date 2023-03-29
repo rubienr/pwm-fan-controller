@@ -7,15 +7,15 @@
 
 StoreStatus ConfigurationHook::storeRamToFlash()
 {
-    restoreSettingsFromRam();
+    writeRamToSettings();
     return settings.storeSettings();
 }
 
 
-LoadStatus ConfigurationHook::restoreRamFromFlash()
+LoadStatus ConfigurationHook::loadFlashToRam()
 {
     const auto loadStatus{ settings.loadSettings() };
-    if(LoadStatus::Loaded == loadStatus) restoreRamFromSettings();
+    if(LoadStatus::Loaded == loadStatus) writeSettingsToRam();
     return loadStatus;
 }
 
@@ -23,7 +23,7 @@ LoadStatus ConfigurationHook::restoreRamFromFlash()
 bool ConfigurationHook::resetRamSettings()
 {
     settings.reset();
-    restoreRamFromSettings();
+    writeSettingsToRam();
     return true;
 }
 
@@ -31,10 +31,16 @@ bool ConfigurationHook::resetRamSettings()
 void ConfigurationHook::reportSettings() const { settings.reportContainer(); }
 
 
-ConfigurationHook::ConfigurationHook(FansController &controller, FlashSettings &settings, unsigned long &autoreportDelayS) :
-controller(controller), settings(settings), autoreportDelayS(autoreportDelayS)
+ConfigurationHook::ConfigurationHook(FansController &controller,
+                                     FlashSettings &settings,
+                                     unsigned long &autoreportDelayS,
+                                     char (&ssid)[OTA_WIFI_MAX_SSID_LENGTH],
+                                     char (&password)[OTA_WIFI_MAX_PASSWORD_LENGTH]) :
+controller(controller),
+settings(settings), autoreportDelayS(autoreportDelayS), wifiSsid(ssid), wifiPassword(password)
 {
-    resetRamSettings();
+    // if(LoadStatus::Loaded != loadFlashToRam()) resetRamSettings();
+    // loadFlashToRam();
 }
 
 
@@ -94,7 +100,35 @@ bool ConfigurationHook::setPowerCurvePoints(uint8_t fanIndex, const uint8_t (&po
 }
 
 
-void ConfigurationHook::restoreRamFromSettings()
+bool ConfigurationHook::setWifiSsid(const char (&ssid)[OTA_WIFI_MAX_SSID_LENGTH])
+{
+    strcpy(wifiSsid, ssid);
+    return true;
+}
+
+
+bool ConfigurationHook::getWifiSsid(char (&ssid)[OTA_WIFI_MAX_SSID_LENGTH])
+{
+    strcpy(ssid, wifiSsid);
+    return true;
+}
+
+
+bool ConfigurationHook::setWifiPassword(const char (&password)[OTA_WIFI_MAX_PASSWORD_LENGTH])
+{
+    strcpy(wifiPassword, password);
+    return true;
+}
+
+
+bool ConfigurationHook::getWifiPassword(char (&password)[OTA_WIFI_MAX_PASSWORD_LENGTH])
+{
+    strcpy(password, wifiPassword);
+    return true;
+}
+
+
+void ConfigurationHook::writeSettingsToRam()
 {
     autoreportDelayS = settings.getSettings().serialAutoreportSeconds;
 
@@ -113,15 +147,19 @@ void ConfigurationHook::restoreRamFromSettings()
 
         ram.fanTemperatureSpec->alertBelowTempC = 0.1f * static_cast<float>(storageSettings.alertBelowTempDeciC);
         ram.fanTemperatureSpec->alertAboveTempC = 0.1f * static_cast<float>(storageSettings.alertAboveTempDeciC);
+        ram.fanTemperatureSpec->temperatureSensorIndex = storageSettings.temperatureSensorIndex;
 
         ram.interpolator.setPowerCurvePoints(storageSettings.fanCurvePower, storageSettings.fanCurveDeciCelsius);
     }
 
     for(auto sensorIdx : definedTemperatureSensorIndices)
         controller.updateTemperatureSensorAddress(sensorIdx, settings.getSettings().temperatureSensors[sensorIdx].address);
+
+    strcpy(wifiSsid, settings.getSettings().wifi.ssid);
+    strcpy(wifiPassword, settings.getSettings().wifi.password);
 }
 
-void ConfigurationHook::restoreSettingsFromRam()
+void ConfigurationHook::writeRamToSettings()
 {
     settings.getSettings().serialAutoreportSeconds = autoreportDelayS;
 
@@ -140,16 +178,20 @@ void ConfigurationHook::restoreSettingsFromRam()
 
         storageSettings.alertBelowTempDeciC = static_cast<int16_t>(roundf(10.0f * ram.fanTemperatureSpec->alertBelowTempC));
         storageSettings.alertAboveTempDeciC = static_cast<int16_t>(roundf(10.0f * ram.fanTemperatureSpec->alertAboveTempC));
+        storageSettings.temperatureSensorIndex = ram.fanTemperatureSpec->temperatureSensorIndex;
 
         const auto &powerCurve{ ram.interpolator.getCurve() };
         for(uint8_t idx{ 0 }; idx < numCurvePoints; idx++)
         {
-            const auto &curvePoint{ powerCurve[idx] };
-            storageSettings.fanCurvePower[idx] = curvePoint.power;
-            storageSettings.fanCurveDeciCelsius[idx] = curvePoint.tempDeciCelsius;
+            const auto &ramCurvePoint{ powerCurve[idx] };
+            storageSettings.fanCurvePower[idx] = ramCurvePoint.power;
+            storageSettings.fanCurveDeciCelsius[idx] = ramCurvePoint.tempDeciCelsius;
         }
     }
 
     for(auto sensorIdx : definedTemperatureSensorIndices)
         controller.getTemperatureSensorAddress(sensorIdx, settings.getSettings().temperatureSensors[sensorIdx].address);
+
+    strcpy(settings.getSettings().wifi.ssid, wifiSsid);
+    strcpy(settings.getSettings().wifi.password, wifiPassword);
 }

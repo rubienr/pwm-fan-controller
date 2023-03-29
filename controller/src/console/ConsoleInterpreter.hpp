@@ -10,6 +10,8 @@
 #include <map>
 #include <string>
 
+#define _stringify(x)      #x
+#define _stringifyValue(x) _stringify(x)
 
 template <uint8_t BufferSize = 128> struct ConsoleInterpreter
 {
@@ -23,9 +25,13 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
         std::string help{};         // help text for console
     };
 
-
+#if defined(OTA_UPDATE)
+    ConsoleInterpreter(char (&buffer)[BufferSize], ConfigurationHook &configurationHook, bool &enableOtaUpdate) :
+    buffer(buffer), configurationHook(configurationHook), enableOtaUpdate(enableOtaUpdate)
+#else
     ConsoleInterpreter(char (&buffer)[BufferSize], ConfigurationHook &configurationHook) :
     buffer(buffer), configurationHook(configurationHook)
+#endif
     {
         // clang-format off
         commandList.push_back({ .name='h', .callback = &ClassType::commandPrintHelp,           .help = "print this help text:                h" });
@@ -49,6 +55,11 @@ template <uint8_t BufferSize = 128> struct ConsoleInterpreter
         commandList.push_back({ .name='d', .callback = &ClassType::commandPrintSettings,       .help = "print settings:                      d" });
         commandList.push_back({ .name='x', .callback = &ClassType::commandResetSettings,       .help = "reset settings:                      x" });
         commandList.push_back({ .name='X', .callback = &ClassType::commandReboot,              .help = "reboot device:                       X" });
+#if defined(OTA_UPDATE)
+        commandList.push_back({ .name='o', .callback = &ClassType::commandToggleEnableOta,     .help = "enable OTA on port " _stringifyValue(OTA_PORT) ":             o" });
+        commandList.push_back({ .name='w', .callback = &ClassType::commandPrintWifiSettings,   .help = "print wifi settings:                 w " });
+        commandList.push_back({ .name='W', .callback = &ClassType::commandSetWifiSettings,     .help = R"(set wifi settings:                   W "ssid" "password")" });
+#endif
         // clang-format on
 
         for(const auto &item : commandList)
@@ -503,7 +514,7 @@ protected:
 
     bool commandLoadSettings(char (&)[BufferSize])
     {
-        auto result{ configurationHook.restoreRamFromFlash() };
+        auto result{ configurationHook.loadFlashToRam() };
         if(result == LoadStatus::Loaded)
         {
             Serial.println(F("settings loaded from flash to RAM"));
@@ -539,9 +550,57 @@ protected:
         return true;
     }
 
+#if defined(OTA_UPDATE)
+    bool commandToggleEnableOta(char (&)[BufferSize])
+    {
+        enableOtaUpdate = !enableOtaUpdate;
+        return true;
+    }
+
+
+    bool commandPrintWifiSettings(char (&)[BufferSize])
+    {
+        // examples: "w"
+        Serial.print("W \"");
+        char ssid[OTA_WIFI_MAX_SSID_LENGTH];
+        configurationHook.getWifiSsid(ssid);
+        Serial.print(ssid);
+        Serial.print("\" \"");
+        char password[OTA_WIFI_MAX_PASSWORD_LENGTH];
+        configurationHook.getWifiPassword(password);
+        Serial.print(password);
+        Serial.println("\"");
+        return true;
+    }
+
+
+    bool commandSetWifiSettings(char (&line)[BufferSize])
+    {
+        // examples: "W \"ssid\" \"password\"
+        char c;
+        char ssidBuffer[OTA_WIFI_MAX_SSID_LENGTH + 1]{ 0 };
+        char passwordBuffer[OTA_WIFI_MAX_PASSWORD_LENGTH + 1]{ 0 };
+
+        if(3 <= sscanf(line, "%c \"%" _stringifyValue(OTA_WIFI_MAX_SSID_LENGTH) "[^\"]\" \"%" _stringifyValue(OTA_WIFI_MAX_PASSWORD_LENGTH) "[^\"]",
+                       &c, ssidBuffer, passwordBuffer))
+        {
+            char ssid[OTA_WIFI_MAX_SSID_LENGTH]{ 0 };
+            char password[OTA_WIFI_MAX_PASSWORD_LENGTH]{ 0 };
+            memcpy(ssid, ssidBuffer, OTA_WIFI_MAX_SSID_LENGTH - 1);
+            memcpy(password, passwordBuffer, OTA_WIFI_MAX_PASSWORD_LENGTH - 1);
+            configurationHook.setWifiSsid(ssid);
+            configurationHook.setWifiPassword(password);
+            return true;
+        }
+        return false;
+    }
+#endif
 
     char (&buffer)[BufferSize];
     ConfigurationHook &configurationHook;
+#if defined(OTA_UPDATE)
+    bool &enableOtaUpdate;
+#endif
 
     std::unordered_map<uint8_t, CommandCallback> commandMap;
     std::vector<Command> commandList;

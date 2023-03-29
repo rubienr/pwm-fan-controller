@@ -76,7 +76,7 @@ void FansController::updateFanInfo(uint8_t fanIndex)
     FanInfo &info{ fansInfo[fanIndex] };
     fetchTemperatureSensorData(info);
 
-    if(hasError(fanIndex))
+    if(hasError(fanIndex) || forcedErrorState)
     {
         fansPwm.setErrorPwm(fanIndex);
         info.interpolatedPowerPercent = 100.0f * static_cast<float>(info.pwmSpec->errorDuty) / static_cast<float>(info.pwmSpec->maxDuty);
@@ -122,3 +122,6 @@ bool FansController::getTemperatureSensorAddress(uint8_t tempSensorIndex, uint8_
 {
     return temperatureSensors.getDeviceAddress(tempSensorIndex, address);
 }
+
+
+void FansController::setForcedErrorState(bool forcedErrorFlag) { forcedErrorState = forcedErrorFlag; }

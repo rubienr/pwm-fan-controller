@@ -5,7 +5,7 @@
 
 #define VERSION_MAJOR                 0
 #define VERSION_MINOR                 0
-#define VERSION_PATCH                 2
+#define VERSION_PATCH                 3
 
 // ----- section serial
 
@@ -25,9 +25,17 @@
 
 #define FLASH_SETTINGS_FILE_PATH_NAME "/settings.cfg"
 
-// ----- section fan
+// ----- section over the air update
 
-#define FAN0                          // comment to disable feature
+#define OTA_UPDATE                    // enable feature to update firmware over wifi
+#if defined(OTA_UPDATE)
+    #define OTA_PORT     3232            // port number, default=3232
+    #define OTA_HOSTNAME "pwmcontroller" // mdns-discoverable host name
+#endif
+
+// ----- section fans
+
+#define FAN0 // comment to disable feature
 #if defined(FAN0)
     #define FAN0_TACHO_GPIO_NUM                0                              // tacho input pin
     #define FAN0_TACHO_COUNTER_UNIT            pcnt_unit_t::PCNT_UNIT_0       // signal counter unit

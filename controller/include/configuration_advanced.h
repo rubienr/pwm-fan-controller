@@ -313,3 +313,8 @@ constexpr const uint8_t definedTemperatureSensors[getDefinedTemperatureSensorsCo
 // ----- section power curve
 
 constexpr const uint8_t numCurvePoints{ 4 };
+
+// ----- section OTA
+
+#define OTA_WIFI_MAX_SSID_LENGTH     33 // max. length of ssid string
+#define OTA_WIFI_MAX_PASSWORD_LENGTH 65 // max. length of password string
