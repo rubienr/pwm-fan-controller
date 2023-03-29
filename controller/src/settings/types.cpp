@@ -284,4 +284,3 @@ void FanSettings::reset(uint8_t fanIndex)
         return;
     }
 }
-
