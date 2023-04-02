@@ -11,7 +11,7 @@
 
 #define SERIAL_BAUD                   115200
 #define SERIAL_CONFIG                 SERIAL_8N1
-#define SERIAL_ECHO_ON                // echoes received characters back to serial console, comment to disable
+// #define SERIAL_ECHO_ON             // echoes received characters back to serial console, comment to disable
 
 // ----- section screen
 
@@ -61,7 +61,7 @@
     #define FAN0_ALERT_BELOW_RPM               0  // trigger alert below RPM threshold
     #define FAN0_ALERT_ABOVE_RPM               1500 // trigger alert above RPM threshold
     #define FAN0_ALERT_BELOW_TEMP_DECI_CELSIUS 0    // trigger alert below temperature threshold
-    #define FAN0_ALERT_ABOVE_TEMP_DECI_CELSIUS 600  // trigger alert above temperature threshold
+    #define FAN0_ALERT_ABOVE_TEMP_DECI_CELSIUS 610  // trigger alert above temperature threshold
 
 #endif
 

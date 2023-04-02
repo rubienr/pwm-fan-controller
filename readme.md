@@ -65,7 +65,7 @@ References:
 ## Console commands 'h'
 
 ```bash
-$ pio device monitor
+$ pio device monitor --echo
 h
 Help:
 h  print this help text:                h
