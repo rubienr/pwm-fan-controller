@@ -64,8 +64,9 @@ bool FansController::hasAlert(uint8_t fanIndex) const
 
 void FansController::fetchTemperatureSensorData(const FanInfo &info) const
 {
-    temperatureSensors.fetchTemperatureCelsius(info.fanTemperatureSpec->temperatureSensorIndex);
-    const auto &temperatureSensorSpec{ temperatureSensors.getSpec(fansInfo->fanTemperatureSpec->temperatureSensorIndex) };
+    const uint8_t temperatureSensorIndex{ info.fanTemperatureSpec->temperatureSensorIndex };
+    temperatureSensors.fetchTemperatureCelsius(temperatureSensorIndex);
+    const auto &temperatureSensorSpec{ temperatureSensors.getSpec(temperatureSensorIndex) };
     info.fanTemperatureSpec->currentTempC = temperatureSensorSpec.currentTempC;
     info.fanTemperatureSpec->hasError = temperatureSensorSpec.hasError;
 }
