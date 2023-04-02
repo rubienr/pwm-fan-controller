@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp', 'python' ]
+        language: [ 'cpp' ]
 
     steps:
     - name: Checkout repository
@@ -56,7 +56,7 @@ jobs:
 
     - name: Build targets
       run: |
-        cd meter
+        cd controller
         platformio run
 
     - name: Perform CodeQL Analysis
