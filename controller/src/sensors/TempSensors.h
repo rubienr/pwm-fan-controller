@@ -15,7 +15,7 @@ struct TempSensors
     explicit TempSensors(DallasTemperature &sensors);
     void begin();
     void requestTemperatureConversion() const;
-    bool fetchTemperatureCelsius(uint8_t idx);
+    bool fetchTemperatureCelsius(uint8_t tempSensorIndex);
     [[nodiscard]] const TempSensorSpec &getSpec(uint8_t tempSensorIndex) const;
     [[nodiscard]] TempSensorSpec &getSpec(uint8_t tempSensorIndex);
     bool setDeviceAddress(uint8_t tempSensorIndex, const DeviceAddress &address);
