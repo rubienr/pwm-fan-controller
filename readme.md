@@ -11,6 +11,8 @@ The response from the fan (tacho signal) is monitored as well.
 
 # Features
 
+<img src="./images/4.jpeg" width="20%">
+
 - fault detection
     - temperature sensor readout error
     - tacho signal PCNT setup error
