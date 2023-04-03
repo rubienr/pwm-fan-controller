@@ -262,7 +262,7 @@ supported.
 
 
 
-<img src="./images/wiring-example.jpeg width="300">
+<img src="./images/wiring-example.jpeg" width="300">
 
 # References:
 
