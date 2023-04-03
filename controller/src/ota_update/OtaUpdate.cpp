@@ -13,12 +13,21 @@ ssid(ssid), password(password)
 bool OtaUpdate::enable()
 {
 #if defined(OTA_UPDATE)
-    // todo: trigger "error" state during OTA process (for error_pwm)
     WiFiClass::mode(WIFI_STA);
-    Serial.print(millis());
-    Serial.print(F(" # connecting to wifi: "));
-    Serial.println(ssid);
-    WiFi.begin(ssid, password);
+
+    if(strlen(ssid) > 0 && strlen(password) > 0)
+    {
+        Serial.print(millis());
+        Serial.print(F(" # connecting to wifi: "));
+        Serial.println(ssid);
+        WiFi.begin(ssid, password);
+    }
+    else
+    {
+        Serial.print(millis());
+        Serial.println(F(" # connecting to access point using config from NVS memory ..."));
+        WiFi.begin();
+    }
     uint8_t connectRetries{ 6 };
     while(WiFiSTAClass::status() != WL_CONNECTED && connectRetries > 0)
     {
@@ -57,6 +66,9 @@ bool OtaUpdate::enable()
         Serial.println(" bytes");
     });
 
+    ArduinoOTA.setRebootOnSuccess(true);
+    ArduinoOTA.setMdnsEnabled(true);
+    ArduinoOTA.setHostname(OTA_HOSTNAME);
     ArduinoOTA.begin();
 
     Serial.print(millis());
@@ -69,7 +81,7 @@ bool OtaUpdate::enable()
 void OtaUpdate::disable()
 {
 #if defined(OTA_UPDATE)
-    WiFi.disconnect(true, true);
+    WiFi.disconnect(true);
     Serial.print(millis());
     Serial.println(" # OTA disabled");
 #endif

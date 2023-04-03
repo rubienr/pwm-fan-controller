@@ -333,10 +333,6 @@ void Firmware::process()
             display.screen.print(OTA_HOSTNAME);
             display.screen.print(".local");
             display.screen.display();
-
-            ArduinoOTA.setRebootOnSuccess(true);
-            ArduinoOTA.setMdnsEnabled(true);
-            ArduinoOTA.setHostname(OTA_HOSTNAME);
         }
         else OtaUpdate::process();
     }
@@ -392,9 +388,7 @@ void Firmware::process()
         {
             char &c{ console.buffer[console.index] };
             c = Serial.read();
-            if(c == '\r')
-                ; // ignore \r
-            else if(c == '\n')
+            if(c == '\n' || c == '\r') // "cu" or "screen" send only '\r' not "\r\n" or '\n'
             {
 #if defined(SERIAL_ECHO_ON)
                 Serial.print(c);
