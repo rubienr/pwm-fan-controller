@@ -9,36 +9,6 @@ temperature and generates a PWM signal for the corresponding fan.
 The PWM signal is computed according to a simple pre-configured four points power curve.
 The response from the fan (tacho signal) is monitored as well.
 
-Due to the required tacho-inputs and PWM-outputs for the moment only
-the [lolin32 board with oled display](https://randomnerdtutorials.com/esp32-built-in-oled-ssd1306/) (ESP32) is
-supported.
-
-Required hardware:
-
-- One PWM channel each fan:
-    - at 25kHz `ledcSetup()`, `ledcAttachPin()` and `ledcWrite()` (
-      see [LEDC reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html))
-    - each GPIO connected to PWM must provide pull-up
-- one PCNT (Pulse Count Controller) each fan (see
-  [PCNT reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html))
-- one GPIO for OneWire (software OneWire for Dallas temperature sensor bus)
-
-Notes on ESP32:
-
-- GPIO6 (SD_CLK), GPIO7 (SD_DATA0), GPIO8 (SD_DATA1), GPIO9 (SD_DATA2), GPIO10 (SD_DATA3), and GPIO11 (SD_CMD) are
-  conntected to internal flash memory and must not be used as regular I/O.
-- GPIO36-GPIO39 (SENSOR_VP, SENSOR_CAPP, SENSOR_CAPN, SENSOR_VN) can only be configured as input GPIO. These
-  input-only pads do not feature an output driver or
-  internal pull-up/pull-down circuitry.
-
-References:
-
-- [lolin32 board with oled display](https://randomnerdtutorials.com/esp32-built-in-oled-ssd1306/)
-- [LEDC reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html)
-- [PCNT reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html)
-- [Noctua whitepaper](./docs/noctua_pwm_specifications_white_paper.pdf)
-- [ESP32 manual](./docs/esp32_technical_reference_manual_en.pdf)
-
 # Features
 
 - fault detection
@@ -106,7 +76,7 @@ temp[N]:         int16, 1/10 Celsius (0.1C), i.e. -273.1C=-2731, 150.1C=1501, te
 [aa]:            1-byte HEX address, i.e. AA, Fe, be
 ```
 
-## Modify Fan Sensor
+## Modify Fan Reference Sensor
 
 ```bash
 # print fan to sensor dependencies
@@ -244,7 +214,7 @@ Container:
  Enter command 'h' for help.
 ```
 
-## TrueNas 13.x and above
+## Remote Configuring with TrueNas >13.x
 
 Using `screen` (preferred over `cu`).
 ```bash
@@ -264,3 +234,38 @@ stty -f /dev/cuaU0 speed 115200
 echo "h" > /dev/cuaU0
 ```
 
+# Wiring
+
+Required hardware:
+
+- One PWM channel each fan:
+  - at 25kHz `ledcSetup()`, `ledcAttachPin()` and `ledcWrite()` (
+    see [LEDC reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html))
+  - each GPIO connected to PWM must provide pull-up
+- one PCNT (Pulse Count Controller) each fan (see
+  [PCNT reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html))
+- one GPIO for OneWire (software OneWire for Dallas temperature sensor bus)
+
+Notes on ESP32:
+
+- GPIO6 (SD_CLK), GPIO7 (SD_DATA0), GPIO8 (SD_DATA1), GPIO9 (SD_DATA2), GPIO10 (SD_DATA3), and GPIO11 (SD_CMD) are
+  conntected to internal flash memory and must not be used as regular I/O.
+- GPIO36-GPIO39 (SENSOR_VP, SENSOR_CAPP, SENSOR_CAPN, SENSOR_VN) can only be configured as input GPIO. These
+  input-only pads do not feature an output driver or
+  internal pull-up/pull-down circuitry.
+
+Due to the required tacho-inputs and PWM-outputs for the moment only
+the [lolin32 board with oled display](https://randomnerdtutorials.com/esp32-built-in-oled-ssd1306/) (ESP32) is
+supported.
+
+
+
+<img src="./images/wiring-example.jpeg width="300">
+
+# References:
+
+- [lolin32 board with oled display](https://randomnerdtutorials.com/esp32-built-in-oled-ssd1306/)
+- [LEDC reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html)
+- [PCNT reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html)
+- [Noctua whitepaper](./docs/noctua_pwm_specifications_white_paper.pdf)
+- [ESP32 manual](./docs/esp32_technical_reference_manual_en.pdf)
