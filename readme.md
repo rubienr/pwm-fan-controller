@@ -1,3 +1,5 @@
+<img src="./images/header.jpeg">
+
 # PWM Fan Controller
 
 A simple fan controller that controls up to 5 PWM-Fans (i.e. Nocuta 4-Pin PWM fan,
@@ -65,7 +67,7 @@ References:
 ## Console commands 'h'
 
 ```bash
-$ pio device monitor --echo
+$ pio device monitor
 h
 Help:
 h  print this help text:                h
@@ -241,3 +243,24 @@ Container:
  alert flags if parameter(s) not in range: 'p'=pwmAlert 'r'=rpmAlert 't'=tempAlert
  Enter command 'h' for help.
 ```
+
+## TrueNas 13.x and above
+
+Using `screen` (preferred over `cu`).
+```bash
+screen /dev/cuaU0 115200 # Ctrl + a then k to kill session.
+```
+
+Using `cu`. Note: when exiting `cu`, the serial state is left most likely in a "reset?" state and controller becomes unresponsive. The controller must be completeley detached and reconnected. Better use `screen`.
+```bash
+cu -l /dev/cuaU0 115200 # ~ then . at the beginning of line to exit session.
+```
+
+Using `stty`. Note when setting attributes with `stty`, the serial state is most left likely in a "reset?" state and controller becomes unresponsive. The contoller must be completely detached and reconnected.
+```bash
+cat /dev/cuaU0 # cat first then configure serial tty
+
+stty -f /dev/cuaU0 speed 115200
+echo "h" > /dev/cuaU0
+```
+
