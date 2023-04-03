@@ -7,6 +7,3 @@
 CMakeListsPrivate.txt
 CMakeLists.txt
 cmake-build-*
-
-#cad
-**/*.FCStd[0-9]
